@@ -68,7 +68,7 @@
 										"type": "AzureBlobFSReadSettings",
 										"recursive": true,
 										"wildcardFolderPath": {
-											"value": "@concat('SalesLT/', item().name, '/*')",
+											"value": "@concat('SalesLT/', item().name,'/')",
 											"type": "Expression"
 										},
 										"wildcardFileName": "*",
@@ -100,7 +100,13 @@
 							"inputs": [
 								{
 									"referenceName": "allBronzeCSVFilesdata",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"name": {
+											"value": "@item().name",
+											"type": "Expression"
+										}
+									}
 								}
 							],
 							"outputs": [

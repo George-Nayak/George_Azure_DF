@@ -5,12 +5,20 @@
 			"referenceName": "AzureDataLakeStorageConnection",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"name": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"folderPath": "SalesLT",
+				"folderPath": {
+					"value": "@concat('SalesLT/',dataset().name, '/*')",
+					"type": "Expression"
+				},
 				"fileSystem": "bronze"
 			},
 			"columnDelimiter": ",",
