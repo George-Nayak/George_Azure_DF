@@ -309,12 +309,20 @@
 					"referenceName": "AzureDataLakeStorageConnection",
 					"type": "LinkedServiceReference"
 				},
+				"parameters": {
+					"name": {
+						"type": "string"
+					}
+				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"folderPath": "SalesLT",
+						"folderPath": {
+							"value": "@concat('SalesLT/',dataset().name, '/*')",
+							"type": "Expression"
+						},
 						"fileSystem": "bronze"
 					},
 					"columnDelimiter": ",",
@@ -485,7 +493,7 @@
 												"type": "AzureBlobFSReadSettings",
 												"recursive": true,
 												"wildcardFolderPath": {
-													"value": "@concat('SalesLT/', item().name, '/*')",
+													"value": "@concat('SalesLT/', item().name,'/')",
 													"type": "Expression"
 												},
 												"wildcardFileName": "*",
@@ -518,7 +526,12 @@
 										{
 											"referenceName": "allBronzeCSVFilesdata",
 											"type": "DatasetReference",
-											"parameters": {}
+											"parameters": {
+												"name": {
+													"value": "@item().name",
+													"type": "Expression"
+												}
+											}
 										}
 									],
 									"outputs": [
