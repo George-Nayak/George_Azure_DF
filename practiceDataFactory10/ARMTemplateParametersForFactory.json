@@ -5,8 +5,14 @@
 		"factoryName": {
 			"value": "practiceDataFactory10"
 		},
+		"AzureDataLakeStorageConnection_accountKey": {
+			"value": ""
+		},
 		"AzureSqlDatabaseConnection_connectionString": {
 			"value": ""
+		},
+		"AzureDataLakeStorageConnection_properties_typeProperties_url": {
+			"value": "https://practicedatalake10.dfs.core.windows.net/"
 		},
 		"AzureKeyVaultconnection_properties_typeProperties_baseUrl": {
 			"value": "https://practiceKeyvault10.vault.azure.net/"
