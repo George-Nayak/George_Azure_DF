@@ -1,0 +1,9 @@
+{
+	"name": "practiceDataFactory10",
+	"location": "eastasia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "aa622ebb-bbe1-482e-a311-76864c54ebc4",
+		"tenantId": "cf67b8e5-bb13-47ec-ae0b-fde4102dffc3"
+	}
+}
