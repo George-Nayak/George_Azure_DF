@@ -1,0 +1,12 @@
+{
+	"name": "AzureSqlDatabaseConnection",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"connectionString": "integrated security=False;encrypt=True;connection timeout=30;data source=practicedb10.database.windows.net;initial catalog=practicedb;user id=sqladmin",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQEFEQUFERkIwLTBBREYtNDc1OS04ODNDLURGRkYxQ0UwMUI2NF81OWExYjg5MS1kM2NmLTQwZTAtODBlNy0zODJlZThmN2M0ZGUiDQp9"
+		}
+	}
+}
