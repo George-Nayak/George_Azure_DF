@@ -1,0 +1,23 @@
+{
+	"name": "SilverContainerData",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorageConnection",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": {
+					"value": "@concat('SalesLT', '/')\n",
+					"type": "Expression"
+				},
+				"fileSystem": "silver"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}

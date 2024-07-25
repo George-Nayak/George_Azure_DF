@@ -1,0 +1,23 @@
+{
+	"name": "allBronzeCSVFilesdata",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorageConnection",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "SalesLT",
+				"fileSystem": "bronze"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
