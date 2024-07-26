@@ -125,42 +125,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/DatalakeBronzeConatinerData')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureDataLakeStorageConnection",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"Tablename": {
-						"type": "string"
-					}
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"folderPath": {
-							"value": "@concat('SalesLT', '/',dataset().Tablename)",
-							"type": "Expression"
-						},
-						"fileSystem": "bronze"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorageConnection')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/SilverContainerData')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -286,6 +250,90 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/deleteSilverConatinerData')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorageConnection",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileSystem": "silver"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorageConnection')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/validateSilverContainerParquetFiles')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorageConnection",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "SalesLT",
+						"fileSystem": "silver"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": [
+					{
+						"name": "AddressID",
+						"type": "UTF8"
+					},
+					{
+						"name": "AddressLine1",
+						"type": "UTF8"
+					},
+					{
+						"name": "AddressLine2",
+						"type": "UTF8"
+					},
+					{
+						"name": "City",
+						"type": "UTF8"
+					},
+					{
+						"name": "StateProvince",
+						"type": "UTF8"
+					},
+					{
+						"name": "CountryRegion",
+						"type": "UTF8"
+					},
+					{
+						"name": "PostalCode",
+						"type": "UTF8"
+					},
+					{
+						"name": "rowguid",
+						"type": "UTF8"
+					},
+					{
+						"name": "ModifiedDate",
+						"type": "UTF8"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorageConnection')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Copypipeline1-Fetch data from db to datalake')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -359,14 +407,12 @@
 											"partitionOption": "None"
 										},
 										"sink": {
-											"type": "DelimitedTextSink",
+											"type": "ParquetSink",
 											"storeSettings": {
 												"type": "AzureBlobFSWriteSettings"
 											},
 											"formatSettings": {
-												"type": "DelimitedTextWriteSettings",
-												"quoteAllText": true,
-												"fileExtension": ".txt"
+												"type": "ParquetWriteSettings"
 											}
 										},
 										"enableStaging": false,
@@ -388,11 +434,11 @@
 									],
 									"outputs": [
 										{
-											"referenceName": "DatalakeBronzeConatinerData",
+											"referenceName": "SilverContainerDataWritenFromBronze",
 											"type": "DatasetReference",
 											"parameters": {
-												"Tablename": {
-													"value": "@item().FullTableName",
+												"name": {
+													"value": "@item().name",
 													"type": "Expression"
 												}
 											}
@@ -407,7 +453,7 @@
 						"type": "GetMetadata",
 						"dependsOn": [
 							{
-								"activity": "ForEachTable Data copy",
+								"activity": "Wait for 30sec",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -477,7 +523,7 @@
 												"type": "AzureBlobFSReadSettings",
 												"recursive": true,
 												"wildcardFolderPath": {
-													"value": "@concat('bronze/','SalesLT/',item().name,'/*')",
+													"value": "@concat('SalesLT/', item().name,'/')",
 													"type": "Expression"
 												},
 												"wildcardFileName": "*",
@@ -508,10 +554,10 @@
 									},
 									"inputs": [
 										{
-											"referenceName": "DatalakeBronzeConatinerData",
+											"referenceName": "allBronzeCSVFilesdata",
 											"type": "DatasetReference",
 											"parameters": {
-												"Tablename": {
+												"name": {
 													"value": "@item().name",
 													"type": "Expression"
 												}
@@ -533,6 +579,62 @@
 								}
 							]
 						}
+					},
+					{
+						"name": "Wait for 30sec",
+						"type": "Wait",
+						"dependsOn": [
+							{
+								"activity": "ForEachTable Data copy",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 30
+						}
+					},
+					{
+						"name": "Delete files from silver conatiner",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "ForEach table write to silver",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "deleteSilverConatinerData",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "AzureDataLakeStorageConnection",
+									"type": "LinkedServiceReference"
+								},
+								"path": "logging"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							}
+						}
 					}
 				],
 				"policy": {
@@ -543,9 +645,11 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/AzureSqlDBTableFetch')]",
 				"[concat(variables('factoryId'), '/datasets/metadataOfBronzeConatiner')]",
+				"[concat(variables('factoryId'), '/datasets/deleteSilverConatinerData')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorageConnection')]",
 				"[concat(variables('factoryId'), '/datasets/AzureSqlAllTable')]",
-				"[concat(variables('factoryId'), '/datasets/DatalakeBronzeConatinerData')]",
-				"[concat(variables('factoryId'), '/datasets/SilverContainerDataWritenFromBronze')]"
+				"[concat(variables('factoryId'), '/datasets/SilverContainerDataWritenFromBronze')]",
+				"[concat(variables('factoryId'), '/datasets/allBronzeCSVFilesdata')]"
 			]
 		},
 		{
@@ -678,6 +782,69 @@
 								}
 							]
 						}
+					},
+					{
+						"name": "DeleteSilverConatiner",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "Validation1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "deleteSilverConatinerData",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "AzureDataLakeStorageConnection",
+									"type": "LinkedServiceReference"
+								},
+								"path": "logging"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "Validation1",
+						"type": "Validation",
+						"dependsOn": [
+							{
+								"activity": "ForEachtablesFromDataToSilver",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "validateSilverContainerParquetFiles",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"timeout": "0.12:00:00",
+							"sleep": 10,
+							"childItems": true
+						}
 					}
 				],
 				"policy": {
@@ -687,6 +854,9 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/metadataOfBronzeConatiner')]",
+				"[concat(variables('factoryId'), '/datasets/deleteSilverConatinerData')]",
+				"[concat(variables('factoryId'), '/datasets/validateSilverContainerParquetFiles')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorageConnection')]",
 				"[concat(variables('factoryId'), '/datasets/allBronzeCSVFilesdata')]",
 				"[concat(variables('factoryId'), '/datasets/SilverContainerDataWritenFromBronze')]"
 			]
