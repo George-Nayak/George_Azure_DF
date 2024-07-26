@@ -489,8 +489,77 @@
 						}
 					},
 					{
-						"name": "Wait for 1min",
-						"type": "Wait",
+						"name": "If Condition true run 2nd Pipeline",
+						"type": "IfCondition",
+						"dependsOn": [
+							{
+								"activity": "setvalidatedTrue",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							},
+							{
+								"activity": "setvalidatedFalse",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@variables('validated')",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "Fail Message",
+									"type": "Fail",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"message": "Delete Opeartaion Failed",
+										"errorCode": "400"
+									}
+								}
+							],
+							"ifTrueActivities": [
+								{
+									"name": "Get Metadata1",
+									"type": "GetMetadata",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataset": {
+											"referenceName": "SilverContainerData",
+											"type": "DatasetReference",
+											"parameters": {}
+										},
+										"fieldList": [
+											"childItems"
+										],
+										"storeSettings": {
+											"type": "AzureBlobFSReadSettings",
+											"enablePartitionDiscovery": false
+										},
+										"formatSettings": {
+											"type": "ParquetReadSettings"
+										}
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "setvalidatedTrue",
+						"type": "SetVariable",
 						"dependsOn": [
 							{
 								"activity": "Validation1",
@@ -499,9 +568,35 @@
 								]
 							}
 						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
 						"userProperties": [],
 						"typeProperties": {
-							"waitTimeInSeconds": 30
+							"variableName": "validated",
+							"value": true
+						}
+					},
+					{
+						"name": "setvalidatedFalse",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "Validation1",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "validated",
+							"value": false
 						}
 					}
 				],
@@ -511,6 +606,9 @@
 				"variables": {
 					"deleteSucceeded": {
 						"type": "Boolean"
+					},
+					"validated": {
+						"type": "Boolean"
 					}
 				},
 				"annotations": []
@@ -518,6 +616,216 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/metadataOfBronzeConatiner')]",
 				"[concat(variables('factoryId'), '/datasets/validateSilverContainerParquetFiles')]",
+				"[concat(variables('factoryId'), '/datasets/allBronzeCSVFilesdata')]",
+				"[concat(variables('factoryId'), '/datasets/SilverContainerDataWritenFromBronze')]",
+				"[concat(variables('factoryId'), '/datasets/SilverContainerData')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Copypipeline3-AddToSilver')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "ForEach table write to silver",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Get Metadata of bronze conatiner",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Copy data bronze to silver').output.childItems",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Copy data bronze to silver",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "DelimitedTextSource",
+											"storeSettings": {
+												"type": "AzureBlobFSReadSettings",
+												"recursive": true,
+												"wildcardFolderPath": {
+													"value": "@concat('SalesLT/', item().name,'/')",
+													"type": "Expression"
+												},
+												"wildcardFileName": "*",
+												"enablePartitionDiscovery": false
+											},
+											"formatSettings": {
+												"type": "DelimitedTextReadSettings"
+											}
+										},
+										"sink": {
+											"type": "ParquetSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "ParquetWriteSettings"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "allBronzeCSVFilesdata",
+											"type": "DatasetReference",
+											"parameters": {
+												"name": {
+													"value": "@item().name",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "SilverContainerDataWritenFromBronze",
+											"type": "DatasetReference",
+											"parameters": {
+												"name": {
+													"value": "@item().name",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"name": "Delete files from silver conatiner",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "Validation silver data before it gets deleted",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "deleteSilverConatinerData",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "AzureDataLakeStorageConnection",
+									"type": "LinkedServiceReference"
+								},
+								"path": "logging"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "Validation silver data before it gets deleted",
+						"type": "Validation",
+						"dependsOn": [
+							{
+								"activity": "ForEach table write to silver",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "validateSilverContainerParquetFiles",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"timeout": "0.12:00:00",
+							"sleep": 10,
+							"childItems": true
+						}
+					},
+					{
+						"name": "Get Metadata of bronze conatiner",
+						"type": "GetMetadata",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "metadataOfBronzeConatiner",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"fieldList": [
+								"childItems"
+							],
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							},
+							"formatSettings": {
+								"type": "DelimitedTextReadSettings"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/deleteSilverConatinerData')]",
+				"[concat(variables('factoryId'), '/datasets/validateSilverContainerParquetFiles')]",
+				"[concat(variables('factoryId'), '/datasets/metadataOfBronzeConatiner')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorageConnection')]",
 				"[concat(variables('factoryId'), '/datasets/allBronzeCSVFilesdata')]",
 				"[concat(variables('factoryId'), '/datasets/SilverContainerDataWritenFromBronze')]"
 			]
@@ -627,7 +935,7 @@
 											"type": "DatasetReference",
 											"parameters": {
 												"name": {
-													"value": "@item().name",
+													"value": "@item().FullTableName",
 													"type": "Expression"
 												}
 											}
@@ -638,140 +946,8 @@
 						}
 					},
 					{
-						"name": "Get Metadata of bronze conatiner",
-						"type": "GetMetadata",
-						"dependsOn": [
-							{
-								"activity": "Wait for 30sec",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "metadataOfBronzeConatiner",
-								"type": "DatasetReference",
-								"parameters": {}
-							},
-							"fieldList": [
-								"childItems"
-							],
-							"storeSettings": {
-								"type": "AzureBlobFSReadSettings",
-								"recursive": true,
-								"enablePartitionDiscovery": false
-							},
-							"formatSettings": {
-								"type": "DelimitedTextReadSettings"
-							}
-						}
-					},
-					{
-						"name": "ForEach table write to silver",
-						"type": "ForEach",
-						"dependsOn": [
-							{
-								"activity": "Get Metadata of bronze conatiner",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@activity('Copy data from each table').output.childItems",
-								"type": "Expression"
-							},
-							"activities": [
-								{
-									"name": "Copy data bronze to silver",
-									"type": "Copy",
-									"dependsOn": [],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"source": {
-											"type": "DelimitedTextSource",
-											"storeSettings": {
-												"type": "AzureBlobFSReadSettings",
-												"recursive": true,
-												"wildcardFolderPath": {
-													"value": "@concat('SalesLT/', item().name,'/')",
-													"type": "Expression"
-												},
-												"wildcardFileName": "*",
-												"enablePartitionDiscovery": false
-											},
-											"formatSettings": {
-												"type": "DelimitedTextReadSettings"
-											}
-										},
-										"sink": {
-											"type": "ParquetSink",
-											"storeSettings": {
-												"type": "AzureBlobFSWriteSettings"
-											},
-											"formatSettings": {
-												"type": "ParquetWriteSettings"
-											}
-										},
-										"enableStaging": false,
-										"translator": {
-											"type": "TabularTranslator",
-											"typeConversion": true,
-											"typeConversionSettings": {
-												"allowDataTruncation": true,
-												"treatBooleanAsNumber": false
-											}
-										}
-									},
-									"inputs": [
-										{
-											"referenceName": "allBronzeCSVFilesdata",
-											"type": "DatasetReference",
-											"parameters": {
-												"name": {
-													"value": "@item().name",
-													"type": "Expression"
-												}
-											}
-										}
-									],
-									"outputs": [
-										{
-											"referenceName": "SilverContainerDataWritenFromBronze",
-											"type": "DatasetReference",
-											"parameters": {
-												"name": {
-													"value": "@item().name",
-													"type": "Expression"
-												}
-											}
-										}
-									]
-								}
-							]
-						}
-					},
-					{
-						"name": "Wait for 30sec",
-						"type": "Wait",
+						"name": "Execute Pipeline 2",
+						"type": "ExecutePipeline",
 						"dependsOn": [
 							{
 								"activity": "ForEachTable Data copy",
@@ -780,170 +956,17 @@
 								]
 							}
 						],
-						"userProperties": [],
-						"typeProperties": {
-							"waitTimeInSeconds": 30
-						}
-					},
-					{
-						"name": "Delete files from silver conatiner",
-						"type": "Delete",
-						"dependsOn": [
-							{
-								"activity": "Validation silver data before it gets deleted",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
 						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
 							"secureInput": false
 						},
 						"userProperties": [],
 						"typeProperties": {
-							"dataset": {
-								"referenceName": "deleteSilverConatinerData",
-								"type": "DatasetReference",
-								"parameters": {}
+							"pipeline": {
+								"referenceName": "Copypipeline2-TestMyCopyFromBronzeToSilver",
+								"type": "PipelineReference"
 							},
-							"logStorageSettings": {
-								"linkedServiceName": {
-									"referenceName": "AzureDataLakeStorageConnection",
-									"type": "LinkedServiceReference"
-								},
-								"path": "logging"
-							},
-							"enableLogging": true,
-							"storeSettings": {
-								"type": "AzureBlobFSReadSettings",
-								"recursive": true,
-								"enablePartitionDiscovery": false
-							}
-						}
-					},
-					{
-						"name": "Validation silver data before it gets deleted",
-						"type": "Validation",
-						"dependsOn": [
-							{
-								"activity": "ForEach table write to silver",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "validateSilverContainerParquetFiles",
-								"type": "DatasetReference",
-								"parameters": {}
-							},
-							"timeout": "0.12:00:00",
-							"sleep": 10,
-							"childItems": true
-						}
-					},
-					{
-						"name": "If Condition true run 2nd Pipeline",
-						"type": "IfCondition",
-						"dependsOn": [
-							{
-								"activity": "setDeleteSucceededTrue",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							},
-							{
-								"activity": "setDeleteSucceededFalse",
-								"dependencyConditions": [
-									"Failed"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"expression": {
-								"value": "@variables('deleteSucceeded')",
-								"type": "Expression"
-							},
-							"ifFalseActivities": [
-								{
-									"name": "Fail Message",
-									"type": "Fail",
-									"dependsOn": [],
-									"userProperties": [],
-									"typeProperties": {
-										"message": "Delete Opeartaion Failed",
-										"errorCode": "400"
-									}
-								}
-							],
-							"ifTrueActivities": [
-								{
-									"name": "Execute Pipeline 2",
-									"type": "ExecutePipeline",
-									"dependsOn": [],
-									"policy": {
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"pipeline": {
-											"referenceName": "Copypipeline2-TestMyCopyFromBronzeToSilver",
-											"type": "PipelineReference"
-										},
-										"waitOnCompletion": true,
-										"parameters": {}
-									}
-								}
-							]
-						}
-					},
-					{
-						"name": "setDeleteSucceededTrue",
-						"type": "SetVariable",
-						"dependsOn": [
-							{
-								"activity": "Delete files from silver conatiner",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"variableName": "deleteSucceeded",
-							"value": true
-						}
-					},
-					{
-						"name": "setDeleteSucceededFalse",
-						"type": "SetVariable",
-						"dependsOn": [
-							{
-								"activity": "Delete files from silver conatiner",
-								"dependencyConditions": [
-									"Failed"
-								]
-							}
-						],
-						"policy": {
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"variableName": "deleteSucceeded",
-							"value": false
+							"waitOnCompletion": true,
+							"parameters": {}
 						}
 					}
 				],
@@ -953,20 +976,18 @@
 				"variables": {
 					"deleteSucceeded": {
 						"type": "Boolean"
+					},
+					"validated": {
+						"type": "Boolean"
 					}
 				},
 				"annotations": []
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/AzureSqlDBTableFetch')]",
-				"[concat(variables('factoryId'), '/datasets/metadataOfBronzeConatiner')]",
-				"[concat(variables('factoryId'), '/datasets/deleteSilverConatinerData')]",
-				"[concat(variables('factoryId'), '/datasets/validateSilverContainerParquetFiles')]",
-				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorageConnection')]",
+				"[concat(variables('factoryId'), '/pipelines/Copypipeline2-TestMyCopyFromBronzeToSilver')]",
 				"[concat(variables('factoryId'), '/datasets/AzureSqlAllTable')]",
-				"[concat(variables('factoryId'), '/datasets/SilverContainerDataWritenFromBronze')]",
-				"[concat(variables('factoryId'), '/datasets/allBronzeCSVFilesdata')]",
-				"[concat(variables('factoryId'), '/pipelines/Copypipeline2-TestMyCopyFromBronzeToSilver')]"
+				"[concat(variables('factoryId'), '/datasets/SilverContainerDataWritenFromBronze')]"
 			]
 		}
 	]
