@@ -16,7 +16,7 @@
 			"location": {
 				"type": "AzureBlobFSLocation",
 				"folderPath": {
-					"value": "@concat('SalesLT/',dataset().name,'/*')",
+					"value": "@concat('SalesLT/',dataset().name)",
 					"type": "Expression"
 				},
 				"fileSystem": "silver"
