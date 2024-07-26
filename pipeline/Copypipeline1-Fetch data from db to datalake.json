@@ -217,7 +217,13 @@
 							"inputs": [
 								{
 									"referenceName": "DatalakeBronzeConatinerData",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"Tablename": {
+											"value": "@item().name",
+											"type": "Expression"
+										}
+									}
 								}
 							],
 							"outputs": [
