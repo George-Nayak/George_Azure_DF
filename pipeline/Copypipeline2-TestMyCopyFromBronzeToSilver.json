@@ -131,7 +131,7 @@
 				"type": "Delete",
 				"dependsOn": [
 					{
-						"activity": "Validation1",
+						"activity": "Wait for 1min",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -185,6 +185,22 @@
 					"timeout": "0.12:00:00",
 					"sleep": 10,
 					"childItems": true
+				}
+			},
+			{
+				"name": "Wait for 1min",
+				"type": "Wait",
+				"dependsOn": [
+					{
+						"activity": "Validation1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"waitTimeInSeconds": 60
 				}
 			}
 		],
