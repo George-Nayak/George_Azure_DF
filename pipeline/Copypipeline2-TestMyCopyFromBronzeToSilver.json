@@ -127,45 +127,6 @@
 				}
 			},
 			{
-				"name": "DeleteSilverConatiner",
-				"type": "Delete",
-				"dependsOn": [
-					{
-						"activity": "Wait for 1min",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"dataset": {
-						"referenceName": "deleteSilverConatinerData",
-						"type": "DatasetReference"
-					},
-					"logStorageSettings": {
-						"linkedServiceName": {
-							"referenceName": "AzureDataLakeStorageConnection",
-							"type": "LinkedServiceReference"
-						},
-						"path": "logging"
-					},
-					"enableLogging": true,
-					"storeSettings": {
-						"type": "AzureBlobFSReadSettings",
-						"recursive": true,
-						"enablePartitionDiscovery": false
-					}
-				}
-			},
-			{
 				"name": "Validation1",
 				"type": "Validation",
 				"dependsOn": [
@@ -200,10 +161,15 @@
 				],
 				"userProperties": [],
 				"typeProperties": {
-					"waitTimeInSeconds": 60
+					"waitTimeInSeconds": 30
 				}
 			}
 		],
+		"variables": {
+			"deleteSucceeded": {
+				"type": "Boolean"
+			}
+		},
 		"annotations": []
 	}
 }
