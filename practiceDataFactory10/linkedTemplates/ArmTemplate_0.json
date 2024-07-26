@@ -904,12 +904,14 @@
 											"partitionOption": "None"
 										},
 										"sink": {
-											"type": "ParquetSink",
+											"type": "DelimitedTextSink",
 											"storeSettings": {
 												"type": "AzureBlobFSWriteSettings"
 											},
 											"formatSettings": {
-												"type": "ParquetWriteSettings"
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
 											}
 										},
 										"enableStaging": false,
@@ -931,7 +933,7 @@
 									],
 									"outputs": [
 										{
-											"referenceName": "SilverContainerDataWritenFromBronze",
+											"referenceName": "allBronzeCSVFilesdata",
 											"type": "DatasetReference",
 											"parameters": {
 												"name": {
@@ -987,7 +989,7 @@
 				"[concat(variables('factoryId'), '/datasets/AzureSqlDBTableFetch')]",
 				"[concat(variables('factoryId'), '/pipelines/Copypipeline2-TestMyCopyFromBronzeToSilver')]",
 				"[concat(variables('factoryId'), '/datasets/AzureSqlAllTable')]",
-				"[concat(variables('factoryId'), '/datasets/SilverContainerDataWritenFromBronze')]"
+				"[concat(variables('factoryId'), '/datasets/allBronzeCSVFilesdata')]"
 			]
 		}
 	]
