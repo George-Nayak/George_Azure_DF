@@ -114,7 +114,7 @@
 				"type": "GetMetadata",
 				"dependsOn": [
 					{
-						"activity": "Wait for 30sec",
+						"activity": "ForEachTable Data copy",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -241,22 +241,6 @@
 				}
 			},
 			{
-				"name": "Wait for 30sec",
-				"type": "Wait",
-				"dependsOn": [
-					{
-						"activity": "ForEachTable Data copy",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"waitTimeInSeconds": 30
-				}
-			},
-			{
 				"name": "Delete files from silver conatiner",
 				"type": "Delete",
 				"dependsOn": [
@@ -316,107 +300,13 @@
 					"sleep": 10,
 					"childItems": true
 				}
-			},
-			{
-				"name": "If Condition true run 2nd Pipeline",
-				"type": "IfCondition",
-				"dependsOn": [
-					{
-						"activity": "setDeleteSucceededTrue",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					},
-					{
-						"activity": "setDeleteSucceededFalse",
-						"dependencyConditions": [
-							"Failed"
-						]
-					}
-				],
-				"userProperties": [],
-				"typeProperties": {
-					"expression": {
-						"value": "@variables('deleteSucceeded')",
-						"type": "Expression"
-					},
-					"ifFalseActivities": [
-						{
-							"name": "Fail Message",
-							"type": "Fail",
-							"dependsOn": [],
-							"userProperties": [],
-							"typeProperties": {
-								"message": "Delete Opeartaion Failed",
-								"errorCode": "400"
-							}
-						}
-					],
-					"ifTrueActivities": [
-						{
-							"name": "Execute Pipeline 2",
-							"type": "ExecutePipeline",
-							"dependsOn": [],
-							"policy": {
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"pipeline": {
-									"referenceName": "Copypipeline2-TestMyCopyFromBronzeToSilver",
-									"type": "PipelineReference"
-								},
-								"waitOnCompletion": true
-							}
-						}
-					]
-				}
-			},
-			{
-				"name": "setDeleteSucceededTrue",
-				"type": "SetVariable",
-				"dependsOn": [
-					{
-						"activity": "Delete files from silver conatiner",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "deleteSucceeded",
-					"value": true
-				}
-			},
-			{
-				"name": "setDeleteSucceededFalse",
-				"type": "SetVariable",
-				"dependsOn": [
-					{
-						"activity": "Delete files from silver conatiner",
-						"dependencyConditions": [
-							"Failed"
-						]
-					}
-				],
-				"policy": {
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"variableName": "deleteSucceeded",
-					"value": false
-				}
 			}
 		],
 		"variables": {
 			"deleteSucceeded": {
+				"type": "Boolean"
+			},
+			"validated": {
 				"type": "Boolean"
 			}
 		},
