@@ -1,0 +1,23 @@
+{
+	"name": "CustomerDatafloeAddressData",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorageConnection",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Dataflow Dataset"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "SalesLT",
+				"fileSystem": "customerdata"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	}
+}

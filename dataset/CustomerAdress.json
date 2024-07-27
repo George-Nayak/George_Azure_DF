@@ -1,0 +1,45 @@
+{
+	"name": "CustomerAdress",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorageConnection",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Dataflow Dataset"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "data_f19a23a6-cd59-494a-889a-17fc0ef6c6ba_8a32cfbb-90bd-47ce-b439-db90e1abbfdd.parquet",
+				"folderPath": "SalesLT/SalesLT.CustomerAddress/*",
+				"fileSystem": "silver"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": [
+			{
+				"name": "CustomerID",
+				"type": "UTF8"
+			},
+			{
+				"name": "AddressID",
+				"type": "UTF8"
+			},
+			{
+				"name": "AddressType",
+				"type": "UTF8"
+			},
+			{
+				"name": "rowguid",
+				"type": "UTF8"
+			},
+			{
+				"name": "ModifiedDate",
+				"type": "UTF8"
+			}
+		]
+	}
+}

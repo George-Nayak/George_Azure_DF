@@ -1,0 +1,85 @@
+{
+	"name": "CustomerTableData",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorageConnection",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Dataflow Dataset"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "data_9725bd18-9d9f-4038-9327-c021920b9d42_e36a7a83-7540-4a48-b8fa-e7920c02030f.parquet",
+				"folderPath": "SalesLT/SalesLT.Customer/*",
+				"fileSystem": "silver"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": [
+			{
+				"name": "CustomerID",
+				"type": "UTF8"
+			},
+			{
+				"name": "NameStyle",
+				"type": "UTF8"
+			},
+			{
+				"name": "Title",
+				"type": "UTF8"
+			},
+			{
+				"name": "FirstName",
+				"type": "UTF8"
+			},
+			{
+				"name": "MiddleName",
+				"type": "UTF8"
+			},
+			{
+				"name": "LastName",
+				"type": "UTF8"
+			},
+			{
+				"name": "Suffix",
+				"type": "UTF8"
+			},
+			{
+				"name": "CompanyName",
+				"type": "UTF8"
+			},
+			{
+				"name": "SalesPerson",
+				"type": "UTF8"
+			},
+			{
+				"name": "EmailAddress",
+				"type": "UTF8"
+			},
+			{
+				"name": "Phone",
+				"type": "UTF8"
+			},
+			{
+				"name": "PasswordHash",
+				"type": "UTF8"
+			},
+			{
+				"name": "PasswordSalt",
+				"type": "UTF8"
+			},
+			{
+				"name": "rowguid",
+				"type": "UTF8"
+			},
+			{
+				"name": "ModifiedDate",
+				"type": "UTF8"
+			}
+		]
+	}
+}

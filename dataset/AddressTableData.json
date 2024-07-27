@@ -1,0 +1,61 @@
+{
+	"name": "AddressTableData",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorageConnection",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Dataflow Dataset"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "data_554e5fa7-9a71-4578-9a8f-781a18d74091_e27793c2-b12e-43af-bdc5-49ae4c9af7dd.parquet",
+				"folderPath": "SalesLT/SalesLT.Address/*",
+				"fileSystem": "silver"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": [
+			{
+				"name": "AddressID",
+				"type": "UTF8"
+			},
+			{
+				"name": "AddressLine1",
+				"type": "UTF8"
+			},
+			{
+				"name": "AddressLine2",
+				"type": "UTF8"
+			},
+			{
+				"name": "City",
+				"type": "UTF8"
+			},
+			{
+				"name": "StateProvince",
+				"type": "UTF8"
+			},
+			{
+				"name": "CountryRegion",
+				"type": "UTF8"
+			},
+			{
+				"name": "PostalCode",
+				"type": "UTF8"
+			},
+			{
+				"name": "rowguid",
+				"type": "UTF8"
+			},
+			{
+				"name": "ModifiedDate",
+				"type": "UTF8"
+			}
+		]
+	}
+}
