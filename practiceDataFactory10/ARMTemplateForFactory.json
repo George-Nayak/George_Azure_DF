@@ -120,8 +120,7 @@
 											"type": "DelimitedTextSource",
 											"storeSettings": {
 												"type": "AzureBlobFSReadSettings",
-												"recursive": true,
-												"wildcardFolderPath": "{source directory}"
+												"recursive": true
 											},
 											"formatSettings": {
 												"type": "DelimitedTextReadSettings"
@@ -1305,7 +1304,7 @@
 			"properties": {
 				"description": "Connection to your source data store.",
 				"linkedServiceName": {
-					"referenceName": "AzureDataLakeStorageConnection",
+					"referenceName": "2ndAzureDataLakeStorageconnection",
 					"type": "LinkedServiceReference"
 				},
 				"parameters": {
@@ -1344,7 +1343,7 @@
 				"schema": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorageConnection')]"
+				"[concat(variables('factoryId'), '/linkedServices/2ndAzureDataLakeStorageconnection')]"
 			]
 		},
 		{
