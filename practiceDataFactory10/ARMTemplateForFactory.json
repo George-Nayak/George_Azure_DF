@@ -7,6 +7,10 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "practiceDataFactory10"
 		},
+		"2ndAzureDataLakeStorageconnection_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of '2ndAzureDataLakeStorageconnection'"
+		},
 		"AzureDataLakeStorageConnection_accountKey": {
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorageConnection'"
@@ -15,9 +19,9 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'AzureSqlDatabaseConnection'"
 		},
-		"2ndAzureDataLakeStorageconnection_accountKey": {
-			"type": "secureString",
-			"metadata": "Secure string for 'accountKey' of '2ndAzureDataLakeStorageconnection'"
+		"2ndAzureDataLakeStorageconnection_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://2ndpracticedatalake10.dfs.core.windows.net/"
 		},
 		"AzureDataLakeStorageConnection_properties_typeProperties_url": {
 			"type": "string",
@@ -30,10 +34,6 @@
 		"UpdatedAzureKeyVaultConnection_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://practicekeyvault100.vault.azure.net/"
-		},
-		"2ndAzureDataLakeStorageconnection_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://2ndpracticedatalake10.dfs.core.windows.net/"
 		}
 	},
 	"variables": {
@@ -120,7 +120,8 @@
 											"type": "DelimitedTextSource",
 											"storeSettings": {
 												"type": "AzureBlobFSReadSettings",
-												"recursive": true
+												"recursive": true,
+												"wildcardFolderPath": "{source directory}"
 											},
 											"formatSettings": {
 												"type": "DelimitedTextReadSettings"
@@ -1496,6 +1497,23 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/2ndAzureDataLakeStorageconnection')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('2ndAzureDataLakeStorageconnection_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('2ndAzureDataLakeStorageconnection_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/AzureDataLakeStorageConnection')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -1726,23 +1744,6 @@
 				"[concat(variables('factoryId'), '/datasets/AddressTableData')]",
 				"[concat(variables('factoryId'), '/datasets/CustomerDatafloeAddressData')]"
 			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/2ndAzureDataLakeStorageconnection')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureBlobFS",
-				"typeProperties": {
-					"url": "[parameters('2ndAzureDataLakeStorageconnection_properties_typeProperties_url')]",
-					"accountKey": {
-						"type": "SecureString",
-						"value": "[parameters('2ndAzureDataLakeStorageconnection_accountKey')]"
-					}
-				}
-			},
-			"dependsOn": []
 		}
 	]
 }
