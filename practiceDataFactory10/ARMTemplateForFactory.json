@@ -407,6 +407,7 @@
 										],
 										"storeSettings": {
 											"type": "AzureBlobFSReadSettings",
+											"recursive": true,
 											"enablePartitionDiscovery": false
 										},
 										"formatSettings": {
@@ -479,6 +480,215 @@
 				"[concat(variables('factoryId'), '/datasets/allBronzeCSVFilesdata')]",
 				"[concat(variables('factoryId'), '/datasets/SilverContainerDataWritenFromBronze')]",
 				"[concat(variables('factoryId'), '/datasets/SilverContainerData')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Copypipeline3-AddToSilver')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "ForEach table write to silver",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Get Metadata of bronze conatiner",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Copy data bronze to silver').output.childItems",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "Copy data bronze to silver",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "DelimitedTextSource",
+											"storeSettings": {
+												"type": "AzureBlobFSReadSettings",
+												"recursive": true,
+												"wildcardFolderPath": {
+													"value": "@concat('SalesLT/', item().name,'/')",
+													"type": "Expression"
+												},
+												"wildcardFileName": "*",
+												"enablePartitionDiscovery": false
+											},
+											"formatSettings": {
+												"type": "DelimitedTextReadSettings"
+											}
+										},
+										"sink": {
+											"type": "ParquetSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "ParquetWriteSettings"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "allBronzeCSVFilesdata",
+											"type": "DatasetReference",
+											"parameters": {
+												"name": {
+													"value": "@item().name",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "SilverContainerDataWritenFromBronze",
+											"type": "DatasetReference",
+											"parameters": {
+												"name": {
+													"value": "@item().name",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					},
+					{
+						"name": "Delete files from silver conatiner",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "Validation silver data before it gets deleted",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "deleteSilverConatinerData",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"logStorageSettings": {
+								"linkedServiceName": {
+									"referenceName": "AzureDataLakeStorageConnection",
+									"type": "LinkedServiceReference"
+								},
+								"path": "logging"
+							},
+							"enableLogging": true,
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							}
+						}
+					},
+					{
+						"name": "Validation silver data before it gets deleted",
+						"type": "Validation",
+						"dependsOn": [
+							{
+								"activity": "ForEach table write to silver",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "validateSilverContainerParquetFiles",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"timeout": "0.12:00:00",
+							"sleep": 10,
+							"childItems": true
+						}
+					},
+					{
+						"name": "Get Metadata of bronze conatiner",
+						"type": "GetMetadata",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "metadataOfBronzeConatiner",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"fieldList": [
+								"childItems"
+							],
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							},
+							"formatSettings": {
+								"type": "DelimitedTextReadSettings"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/deleteSilverConatinerData')]",
+				"[concat(variables('factoryId'), '/datasets/validateSilverContainerParquetFiles')]",
+				"[concat(variables('factoryId'), '/datasets/metadataOfBronzeConatiner')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorageConnection')]",
+				"[concat(variables('factoryId'), '/datasets/allBronzeCSVFilesdata')]",
+				"[concat(variables('factoryId'), '/datasets/SilverContainerDataWritenFromBronze')]"
 			]
 		},
 		{
@@ -784,212 +994,413 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/Copypipeline3-AddToSilver')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
+			"name": "[concat(parameters('factoryName'), '/dataflow1_ProcessCustomerData')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"activities": [
-					{
-						"name": "ForEach table write to silver",
-						"type": "ForEach",
-						"dependsOn": [
-							{
-								"activity": "Get Metadata of bronze conatiner",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@activity('Copy data bronze to silver').output.childItems",
-								"type": "Expression"
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "CustomerTableData",
+								"type": "DatasetReference"
 							},
-							"activities": [
-								{
-									"name": "Copy data bronze to silver",
-									"type": "Copy",
-									"dependsOn": [],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"source": {
-											"type": "DelimitedTextSource",
-											"storeSettings": {
-												"type": "AzureBlobFSReadSettings",
-												"recursive": true,
-												"wildcardFolderPath": {
-													"value": "@concat('SalesLT/', item().name,'/')",
-													"type": "Expression"
-												},
-												"wildcardFileName": "*",
-												"enablePartitionDiscovery": false
-											},
-											"formatSettings": {
-												"type": "DelimitedTextReadSettings"
-											}
-										},
-										"sink": {
-											"type": "ParquetSink",
-											"storeSettings": {
-												"type": "AzureBlobFSWriteSettings"
-											},
-											"formatSettings": {
-												"type": "ParquetWriteSettings"
-											}
-										},
-										"enableStaging": false,
-										"translator": {
-											"type": "TabularTranslator",
-											"typeConversion": true,
-											"typeConversionSettings": {
-												"allowDataTruncation": true,
-												"treatBooleanAsNumber": false
-											}
-										}
-									},
-									"inputs": [
-										{
-											"referenceName": "allBronzeCSVFilesdata",
-											"type": "DatasetReference",
-											"parameters": {
-												"name": {
-													"value": "@item().name",
-													"type": "Expression"
-												}
-											}
-										}
-									],
-									"outputs": [
-										{
-											"referenceName": "SilverContainerDataWritenFromBronze",
-											"type": "DatasetReference",
-											"parameters": {
-												"name": {
-													"value": "@item().name",
-													"type": "Expression"
-												}
-											}
-										}
-									]
-								}
-							]
-						}
-					},
-					{
-						"name": "Delete files from silver conatiner",
-						"type": "Delete",
-						"dependsOn": [
-							{
-								"activity": "Validation silver data before it gets deleted",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
+							"name": "sourceCustomerdata"
 						},
-						"userProperties": [],
-						"typeProperties": {
+						{
 							"dataset": {
-								"referenceName": "deleteSilverConatinerData",
-								"type": "DatasetReference",
-								"parameters": {}
+								"referenceName": "CustomerAdress",
+								"type": "DatasetReference"
 							},
-							"logStorageSettings": {
-								"linkedServiceName": {
-									"referenceName": "AzureDataLakeStorageConnection",
-									"type": "LinkedServiceReference"
-								},
-								"path": "logging"
-							},
-							"enableLogging": true,
-							"storeSettings": {
-								"type": "AzureBlobFSReadSettings",
-								"recursive": true,
-								"enablePartitionDiscovery": false
-							}
-						}
-					},
-					{
-						"name": "Validation silver data before it gets deleted",
-						"type": "Validation",
-						"dependsOn": [
-							{
-								"activity": "ForEach table write to silver",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"userProperties": [],
-						"typeProperties": {
-							"dataset": {
-								"referenceName": "validateSilverContainerParquetFiles",
-								"type": "DatasetReference",
-								"parameters": {}
-							},
-							"timeout": "0.12:00:00",
-							"sleep": 10,
-							"childItems": true
-						}
-					},
-					{
-						"name": "Get Metadata of bronze conatiner",
-						"type": "GetMetadata",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
+							"name": "sourceCustomeradressData"
 						},
-						"userProperties": [],
-						"typeProperties": {
+						{
 							"dataset": {
-								"referenceName": "metadataOfBronzeConatiner",
-								"type": "DatasetReference",
-								"parameters": {}
+								"referenceName": "AddressTableData",
+								"type": "DatasetReference"
 							},
-							"fieldList": [
-								"childItems"
-							],
-							"storeSettings": {
-								"type": "AzureBlobFSReadSettings",
-								"recursive": true,
-								"enablePartitionDiscovery": false
-							},
-							"formatSettings": {
-								"type": "DelimitedTextReadSettings"
-							}
+							"name": "sourceAdresstableData"
 						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": []
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "CustomerDatafloeAddressData",
+								"type": "DatasetReference"
+							},
+							"name": "sinkToLoadCustomerandhisAdressdata"
+						}
+					],
+					"transformations": [
+						{
+							"name": "selectRequiredCustomerColimn",
+							"description": "selectRequiredCustomerColimn with columns 'CustomerID, NameStyle, Title, FirstName, MiddleName, LastName, Suffix, CompanyName, SalesPerson, EmailAddress, Phone, PasswordHash, PasswordSalt, rowguid, ModifiedDate'"
+						},
+						{
+							"name": "joiningCUSTtoCustAdress"
+						},
+						{
+							"name": "derivedColumnSingleAdress"
+						},
+						{
+							"name": "joinPrev2sourceWithAddress"
+						},
+						{
+							"name": "selectonlyRequiredCoumns"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          CustomerID as string,",
+						"          NameStyle as string,",
+						"          Title as string,",
+						"          FirstName as string,",
+						"          MiddleName as string,",
+						"          LastName as string,",
+						"          Suffix as string,",
+						"          CompanyName as string,",
+						"          SalesPerson as string,",
+						"          EmailAddress as string,",
+						"          Phone as string,",
+						"          PasswordHash as string,",
+						"          PasswordSalt as string,",
+						"          rowguid as string,",
+						"          ModifiedDate as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'parquet') ~> sourceCustomerdata",
+						"source(output(",
+						"          CustomerID as string,",
+						"          AddressID as string,",
+						"          AddressType as string,",
+						"          rowguid as string,",
+						"          ModifiedDate as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'parquet') ~> sourceCustomeradressData",
+						"source(output(",
+						"          AddressID as string,",
+						"          AddressLine1 as string,",
+						"          AddressLine2 as string,",
+						"          City as string,",
+						"          StateProvince as string,",
+						"          CountryRegion as string,",
+						"          PostalCode as string,",
+						"          rowguid as string,",
+						"          ModifiedDate as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'parquet') ~> sourceAdresstableData",
+						"sourceCustomerdata select(mapColumn(",
+						"          CustomerID,",
+						"          FirstName,",
+						"          LastName,",
+						"          CompanyName,",
+						"          EmailAddress,",
+						"          Phone",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectRequiredCustomerColimn",
+						"selectRequiredCustomerColimn, sourceCustomeradressData join(selectRequiredCustomerColimn@CustomerID == sourceCustomeradressData@CustomerID,",
+						"     joinType:'left',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> joiningCUSTtoCustAdress",
+						"sourceAdresstableData derive(SingleAddressLine = concat(AddressLine1,',',City)) ~> derivedColumnSingleAdress",
+						"joiningCUSTtoCustAdress, derivedColumnSingleAdress join(sourceCustomeradressData@AddressID == sourceAdresstableData@AddressID,",
+						"     joinType:'left',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> joinPrev2sourceWithAddress",
+						"joinPrev2sourceWithAddress select(mapColumn(",
+						"          CustomerID = selectRequiredCustomerColimn@CustomerID,",
+						"          FirstName,",
+						"          LastName,",
+						"          CompanyName,",
+						"          EmailAddress,",
+						"          Phone,",
+						"          CustomerID = sourceCustomeradressData@CustomerID,",
+						"          AddressID = sourceCustomeradressData@AddressID,",
+						"          AddressID = sourceAdresstableData@AddressID,",
+						"          AddressLine1,",
+						"          City,",
+						"          CountryRegion,",
+						"          PostalCode,",
+						"          SingleAddressLine",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectonlyRequiredCoumns",
+						"selectonlyRequiredCoumns sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'parquet',",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          CustomerID,",
+						"          FirstName,",
+						"          LastName,",
+						"          CompanyName,",
+						"          EmailAddress,",
+						"          Phone,",
+						"          AddressID,",
+						"          AddressLine1,",
+						"          City,",
+						"          CountryRegion,",
+						"          PostalCode,",
+						"          SingleAddressLine",
+						"     )) ~> sinkToLoadCustomerandhisAdressdata"
+					]
+				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/deleteSilverConatinerData')]",
-				"[concat(variables('factoryId'), '/datasets/validateSilverContainerParquetFiles')]",
-				"[concat(variables('factoryId'), '/datasets/metadataOfBronzeConatiner')]",
-				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorageConnection')]",
-				"[concat(variables('factoryId'), '/datasets/allBronzeCSVFilesdata')]",
-				"[concat(variables('factoryId'), '/datasets/SilverContainerDataWritenFromBronze')]"
+				"[concat(variables('factoryId'), '/datasets/CustomerTableData')]",
+				"[concat(variables('factoryId'), '/datasets/CustomerAdress')]",
+				"[concat(variables('factoryId'), '/datasets/AddressTableData')]",
+				"[concat(variables('factoryId'), '/datasets/CustomerDatafloeAddressData')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CustomerTableData')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorageConnection",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Dataflow Dataset"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "data_9725bd18-9d9f-4038-9327-c021920b9d42_e36a7a83-7540-4a48-b8fa-e7920c02030f.parquet",
+						"folderPath": "SalesLT/SalesLT.Customer/*",
+						"fileSystem": "silver"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": [
+					{
+						"name": "CustomerID",
+						"type": "UTF8"
+					},
+					{
+						"name": "NameStyle",
+						"type": "UTF8"
+					},
+					{
+						"name": "Title",
+						"type": "UTF8"
+					},
+					{
+						"name": "FirstName",
+						"type": "UTF8"
+					},
+					{
+						"name": "MiddleName",
+						"type": "UTF8"
+					},
+					{
+						"name": "LastName",
+						"type": "UTF8"
+					},
+					{
+						"name": "Suffix",
+						"type": "UTF8"
+					},
+					{
+						"name": "CompanyName",
+						"type": "UTF8"
+					},
+					{
+						"name": "SalesPerson",
+						"type": "UTF8"
+					},
+					{
+						"name": "EmailAddress",
+						"type": "UTF8"
+					},
+					{
+						"name": "Phone",
+						"type": "UTF8"
+					},
+					{
+						"name": "PasswordHash",
+						"type": "UTF8"
+					},
+					{
+						"name": "PasswordSalt",
+						"type": "UTF8"
+					},
+					{
+						"name": "rowguid",
+						"type": "UTF8"
+					},
+					{
+						"name": "ModifiedDate",
+						"type": "UTF8"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorageConnection')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CustomerAdress')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorageConnection",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Dataflow Dataset"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "data_f19a23a6-cd59-494a-889a-17fc0ef6c6ba_8a32cfbb-90bd-47ce-b439-db90e1abbfdd.parquet",
+						"folderPath": "SalesLT/SalesLT.CustomerAddress/*",
+						"fileSystem": "silver"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": [
+					{
+						"name": "CustomerID",
+						"type": "UTF8"
+					},
+					{
+						"name": "AddressID",
+						"type": "UTF8"
+					},
+					{
+						"name": "AddressType",
+						"type": "UTF8"
+					},
+					{
+						"name": "rowguid",
+						"type": "UTF8"
+					},
+					{
+						"name": "ModifiedDate",
+						"type": "UTF8"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorageConnection')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AddressTableData')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorageConnection",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Dataflow Dataset"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "data_554e5fa7-9a71-4578-9a8f-781a18d74091_e27793c2-b12e-43af-bdc5-49ae4c9af7dd.parquet",
+						"folderPath": "SalesLT/SalesLT.Address/*",
+						"fileSystem": "silver"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": [
+					{
+						"name": "AddressID",
+						"type": "UTF8"
+					},
+					{
+						"name": "AddressLine1",
+						"type": "UTF8"
+					},
+					{
+						"name": "AddressLine2",
+						"type": "UTF8"
+					},
+					{
+						"name": "City",
+						"type": "UTF8"
+					},
+					{
+						"name": "StateProvince",
+						"type": "UTF8"
+					},
+					{
+						"name": "CountryRegion",
+						"type": "UTF8"
+					},
+					{
+						"name": "PostalCode",
+						"type": "UTF8"
+					},
+					{
+						"name": "rowguid",
+						"type": "UTF8"
+					},
+					{
+						"name": "ModifiedDate",
+						"type": "UTF8"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorageConnection')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CustomerDatafloeAddressData')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorageConnection",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Dataflow Dataset"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "SalesLT",
+						"fileSystem": "customerdata"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorageConnection')]"
 			]
 		}
 	]
