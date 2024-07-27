@@ -73,31 +73,39 @@
 							"userProperties": [],
 							"typeProperties": {
 								"source": {
-									"type": "DelimitedTextSource",
+									"type": "ParquetSource",
 									"storeSettings": {
 										"type": "AzureBlobFSReadSettings",
 										"recursive": true
 									},
 									"formatSettings": {
-										"type": "DelimitedTextReadSettings"
+										"type": "ParquetReadSettings"
 									}
 								},
 								"sink": {
 									"type": "AzureSqlSink",
 									"tableOption": "autoCreate"
 								},
-								"enableStaging": false
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
 							},
 							"inputs": [
 								{
-									"referenceName": "SourceDataset",
+									"referenceName": "newsourcedataset",
 									"type": "DatasetReference",
 									"parameters": {
-										"fileName": {
+										"folderName": {
 											"value": "@item().name",
 											"type": "Expression"
 										},
-										"SourceContainer": {
+										"SourceConatiner": {
 											"value": "@pipeline().parameters.SourceContainer",
 											"type": "Expression"
 										},

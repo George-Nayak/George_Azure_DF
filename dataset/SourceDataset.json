@@ -27,7 +27,6 @@
 			},
 			"columnDelimiter": ",",
 			"rowDelimiter": "\r",
-			"compressionCodec": "snappy",
 			"escapeChar": "\\",
 			"firstRowAsHeader": true,
 			"quoteChar": null
