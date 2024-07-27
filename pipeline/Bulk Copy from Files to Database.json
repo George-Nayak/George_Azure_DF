@@ -110,7 +110,10 @@
 											"value": "@pipeline().parameters.SourceDirectory",
 											"type": "Expression"
 										},
-										"filename": "@endsWith(item().name, '.parquet')"
+										"filename": {
+											"value": "@item().name",
+											"type": "Expression"
+										}
 									}
 								}
 							],
