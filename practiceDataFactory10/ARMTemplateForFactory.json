@@ -60,18 +60,9 @@
 						"userProperties": [],
 						"typeProperties": {
 							"dataset": {
-								"referenceName": "GetMetadataDataset",
+								"referenceName": "newgetmetadataset",
 								"type": "DatasetReference",
-								"parameters": {
-									"SourceContainer": {
-										"value": "@pipeline().parameters.SourceContainer",
-										"type": "Expression"
-									},
-									"SourceDirectory": {
-										"value": "@pipeline().parameters.SourceDirectory",
-										"type": "Expression"
-									}
-								}
+								"parameters": {}
 							},
 							"fieldList": [
 								"childItems"
@@ -81,7 +72,7 @@
 								"recursive": true
 							},
 							"formatSettings": {
-								"type": "DelimitedTextReadSettings"
+								"type": "ParquetReadSettings"
 							}
 						}
 					},
@@ -106,7 +97,14 @@
 								{
 									"name": "CopyFiles",
 									"type": "Copy",
-									"dependsOn": [],
+									"dependsOn": [
+										{
+											"activity": "Get Metadata of files",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
 									"policy": {
 										"timeout": "7.00:00:00",
 										"retry": 0,
@@ -117,36 +115,48 @@
 									"userProperties": [],
 									"typeProperties": {
 										"source": {
-											"type": "DelimitedTextSource",
+											"type": "ParquetSource",
 											"storeSettings": {
 												"type": "AzureBlobFSReadSettings",
 												"recursive": true
 											},
 											"formatSettings": {
-												"type": "DelimitedTextReadSettings"
+												"type": "ParquetReadSettings"
 											}
 										},
 										"sink": {
 											"type": "AzureSqlSink",
 											"tableOption": "autoCreate"
 										},
-										"enableStaging": false
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
 									},
 									"inputs": [
 										{
-											"referenceName": "SourceDataset",
+											"referenceName": "newsourcedataset",
 											"type": "DatasetReference",
 											"parameters": {
-												"fileName": {
+												"folderName": {
 													"value": "@item().name",
 													"type": "Expression"
 												},
-												"SourceContainer": {
+												"SourceConatiner": {
 													"value": "@pipeline().parameters.SourceContainer",
 													"type": "Expression"
 												},
 												"SourceDirectory": {
 													"value": "@pipeline().parameters.SourceDirectory",
+													"type": "Expression"
+												},
+												"filename": {
+													"value": "@item().filename",
 													"type": "Expression"
 												}
 											}
@@ -164,6 +174,42 @@
 											}
 										}
 									]
+								},
+								{
+									"name": "Get Metadata of files",
+									"type": "GetMetadata",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataset": {
+											"referenceName": "getfilenamesdataset",
+											"type": "DatasetReference",
+											"parameters": {
+												"folderName": {
+													"value": "@item().name",
+													"type": "Expression"
+												}
+											}
+										},
+										"fieldList": [
+											"childItems"
+										],
+										"storeSettings": {
+											"type": "AzureBlobFSReadSettings",
+											"recursive": true,
+											"enablePartitionDiscovery": false
+										},
+										"formatSettings": {
+											"type": "ParquetReadSettings"
+										}
+									}
 								}
 							]
 						}
@@ -183,9 +229,10 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/GetMetadataDataset')]",
-				"[concat(variables('factoryId'), '/datasets/SourceDataset')]",
-				"[concat(variables('factoryId'), '/datasets/AzureSqlDatabaseSinkDataset')]"
+				"[concat(variables('factoryId'), '/datasets/newgetmetadataset')]",
+				"[concat(variables('factoryId'), '/datasets/newsourcedataset')]",
+				"[concat(variables('factoryId'), '/datasets/AzureSqlDatabaseSinkDataset')]",
+				"[concat(variables('factoryId'), '/datasets/getfilenamesdataset')]"
 			]
 		},
 		{
@@ -1329,7 +1376,7 @@
 					"columnDelimiter": ",",
 					"rowDelimiter": "\r",
 					"escapeChar": "\\",
-					"firstRowAsHeader": false,
+					"firstRowAsHeader": true,
 					"quoteChar": null
 				},
 				"schema": []
@@ -1398,6 +1445,38 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/getfilenamesdataset')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "2ndAzureDataLakeStorageconnection",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"folderName": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileSystem": {
+							"value": "@dataset().folderName",
+							"type": "Expression"
+						}
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/2ndAzureDataLakeStorageconnection')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/metadataOfBronzeConatiner')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1423,6 +1502,74 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorageConnection')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/newgetmetadataset')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "2ndAzureDataLakeStorageconnection",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/2ndAzureDataLakeStorageconnection')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/newsourcedataset')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "2ndAzureDataLakeStorageconnection",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"folderName": {
+						"type": "string"
+					},
+					"SourceConatiner": {
+						"type": "string"
+					},
+					"SourceDirectory": {
+						"type": "string"
+					},
+					"filename": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().filename",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@dataset().folderName",
+							"type": "Expression"
+						}
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/2ndAzureDataLakeStorageconnection')]"
 			]
 		},
 		{
