@@ -1,5 +1,5 @@
 {
-	"name": "newsourcedataset",
+	"name": "getfilenamesdataset",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "2ndAzureDataLakeStorageconnection",
@@ -8,15 +8,6 @@
 		"parameters": {
 			"folderName": {
 				"type": "string"
-			},
-			"SourceConatiner": {
-				"type": "string"
-			},
-			"SourceDirectory": {
-				"type": "string"
-			},
-			"filename": {
-				"type": "string"
 			}
 		},
 		"annotations": [],
@@ -24,10 +15,6 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": {
-					"value": "@dataset().filename",
-					"type": "Expression"
-				},
 				"fileSystem": {
 					"value": "@dataset().folderName",
 					"type": "Expression"
