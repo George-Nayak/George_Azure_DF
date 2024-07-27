@@ -22,22 +22,14 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": {
-					"value": "@dataset().fileName",
-					"type": "Expression"
-				},
-				"folderPath": {
-					"value": "@dataset().SourceDirectory",
-					"type": "Expression"
-				},
-				"fileSystem": {
-					"value": "@dataset().SourceContainer",
-					"type": "Expression"
-				}
+				"fileName": "part-00000-0a702f84-e4f6-49cd-b845-a88896a37043-c000.snappy.parquet",
+				"fileSystem": "customerdatawithaddress"
 			},
 			"columnDelimiter": ",",
+			"rowDelimiter": "\r",
 			"escapeChar": "\\",
-			"quoteChar": "\""
+			"firstRowAsHeader": false,
+			"quoteChar": null
 		},
 		"schema": []
 	}
