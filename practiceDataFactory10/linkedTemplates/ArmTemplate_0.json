@@ -419,7 +419,7 @@
 			"properties": {
 				"description": "Connection to your source data store.",
 				"linkedServiceName": {
-					"referenceName": "AzureDataLakeStorageConnection",
+					"referenceName": "2ndAzureDataLakeStorageconnection",
 					"type": "LinkedServiceReference"
 				},
 				"parameters": {
@@ -451,7 +451,7 @@
 				"schema": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorageConnection')]"
+				"[concat(variables('factoryId'), '/linkedServices/2ndAzureDataLakeStorageconnection')]"
 			]
 		},
 		{
