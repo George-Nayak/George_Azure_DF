@@ -155,10 +155,7 @@
 													"value": "@pipeline().parameters.SourceDirectory",
 													"type": "Expression"
 												},
-												"filename": {
-													"value": "@item().filename",
-													"type": "Expression"
-												}
+												"filename": "@endsWith(item().name, '.parquet')"
 											}
 										}
 									],
@@ -1560,7 +1557,7 @@
 							"type": "Expression"
 						},
 						"fileSystem": {
-							"value": "@dataset().folderName",
+							"value": "@dataset().SourceConatiner",
 							"type": "Expression"
 						}
 					},
