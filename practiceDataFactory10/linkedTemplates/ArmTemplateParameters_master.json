@@ -11,6 +11,9 @@
 		"AzureSqlDatabaseConnection_connectionString": {
 			"value": ""
 		},
+		"2ndAzureDataLakeStorageconnection_accountKey": {
+			"value": ""
+		},
 		"AzureDataLakeStorageConnection_properties_typeProperties_url": {
 			"value": "https://practicedatalake10.dfs.core.windows.net/"
 		},
@@ -19,6 +22,9 @@
 		},
 		"UpdatedAzureKeyVaultConnection_properties_typeProperties_baseUrl": {
 			"value": "https://practicekeyvault100.vault.azure.net/"
+		},
+		"2ndAzureDataLakeStorageconnection_properties_typeProperties_url": {
+			"value": "https://2ndpracticedatalake10.dfs.core.windows.net/"
 		},
 		"containerUri": {
 			"value": ""
