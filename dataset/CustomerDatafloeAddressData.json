@@ -2,7 +2,7 @@
 	"name": "CustomerDatafloeAddressData",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "AzureDataLakeStorageConnection",
+			"referenceName": "2ndAzureDataLakeStorageconnection",
 			"type": "LinkedServiceReference"
 		},
 		"folder": {
@@ -13,8 +13,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"folderPath": "SalesLT",
-				"fileSystem": "customerdata"
+				"fileSystem": "customerdatawithaddress"
 			},
 			"compressionCodec": "snappy"
 		},
