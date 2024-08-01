@@ -105,7 +105,7 @@
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> joinPrev2sourceWithAddress",
 				"joinPrev2sourceWithAddress select(mapColumn(",
-				"          CustomerID = selectRequiredCustomerColimn@CustomerID,",
+				"          CustomerID = sourceCustomerdata@CustomerID,",
 				"          FirstName,",
 				"          LastName,",
 				"          CompanyName,",
