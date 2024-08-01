@@ -17,7 +17,8 @@
 		},
 		"AzureSqlDatabaseConnection_connectionString": {
 			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'AzureSqlDatabaseConnection'"
+			"metadata": "Secure string for 'connectionString' of 'AzureSqlDatabaseConnection'",
+			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=practicedb10.database.windows.net;Initial Catalog=practicedb;User ID=sqladmin"
 		},
 		"2ndAzureDataLakeStorageconnection_properties_typeProperties_url": {
 			"type": "string",
@@ -29,7 +30,7 @@
 		},
 		"AzureKeyVaultconnection_properties_typeProperties_baseUrl": {
 			"type": "string",
-			"defaultValue": "https://practiceKeyvault10.vault.azure.net/"
+			"defaultValue": "https://practicekeyvault100.vault.azure.net/"
 		},
 		"UpdatedAzureKeyVaultConnection_properties_typeProperties_baseUrl": {
 			"type": "string",
@@ -1689,10 +1690,20 @@
 				"annotations": [],
 				"type": "AzureSqlDatabase",
 				"typeProperties": {
-					"connectionString": "[parameters('AzureSqlDatabaseConnection_connectionString')]"
+					"connectionString": "[parameters('AzureSqlDatabaseConnection_connectionString')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "AzureKeyVaultconnection",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "passworddb"
+					}
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureKeyVaultconnection')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/UpdatedAzureKeyVaultConnection')]",
@@ -1748,14 +1759,7 @@
 					],
 					"transformations": [
 						{
-							"name": "selectRequiredCustomerColimn",
-							"description": "selectRequiredCustomerColimn with columns 'CustomerID, NameStyle, Title, FirstName, MiddleName, LastName, Suffix, CompanyName, SalesPerson, EmailAddress, Phone, PasswordHash, PasswordSalt, rowguid, ModifiedDate'"
-						},
-						{
 							"name": "joiningCUSTtoCustAdress"
-						},
-						{
-							"name": "derivedColumnSingleAdress"
 						},
 						{
 							"name": "joinPrev2sourceWithAddress"
@@ -1812,29 +1816,18 @@
 						"     validateSchema: false,",
 						"     ignoreNoFilesFound: false,",
 						"     format: 'parquet') ~> sourceAdresstableData",
-						"sourceCustomerdata select(mapColumn(",
-						"          CustomerID,",
-						"          FirstName,",
-						"          LastName,",
-						"          CompanyName,",
-						"          EmailAddress,",
-						"          Phone",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> selectRequiredCustomerColimn",
-						"selectRequiredCustomerColimn, sourceCustomeradressData join(selectRequiredCustomerColimn@CustomerID == sourceCustomeradressData@CustomerID,",
-						"     joinType:'left',",
+						"sourceCustomerdata, sourceCustomeradressData join(sourceCustomerdata@CustomerID == sourceCustomeradressData@CustomerID,",
+						"     joinType:'inner',",
 						"     matchType:'exact',",
 						"     ignoreSpaces: false,",
 						"     broadcast: 'auto')~> joiningCUSTtoCustAdress",
-						"sourceAdresstableData derive(SingleAddressLine = concat(AddressLine1,',',City)) ~> derivedColumnSingleAdress",
-						"joiningCUSTtoCustAdress, derivedColumnSingleAdress join(sourceCustomeradressData@AddressID == sourceAdresstableData@AddressID,",
-						"     joinType:'left',",
+						"joiningCUSTtoCustAdress, sourceAdresstableData join(sourceCustomeradressData@AddressID == sourceAdresstableData@AddressID,",
+						"     joinType:'inner',",
 						"     matchType:'exact',",
 						"     ignoreSpaces: false,",
 						"     broadcast: 'auto')~> joinPrev2sourceWithAddress",
 						"joinPrev2sourceWithAddress select(mapColumn(",
-						"          CustomerID = selectRequiredCustomerColimn@CustomerID,",
+						"          CustomerID = sourceCustomerdata@CustomerID,",
 						"          FirstName,",
 						"          LastName,",
 						"          CompanyName,",
@@ -1846,8 +1839,7 @@
 						"          AddressLine1,",
 						"          City,",
 						"          CountryRegion,",
-						"          PostalCode,",
-						"          SingleAddressLine",
+						"          PostalCode",
 						"     ),",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> selectonlyRequiredCoumns",
@@ -1860,18 +1852,17 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     mapColumn(",
-						"          CustomerID,",
 						"          FirstName,",
 						"          LastName,",
 						"          CompanyName,",
 						"          EmailAddress,",
 						"          Phone,",
+						"          CustomerID,",
 						"          AddressID,",
 						"          AddressLine1,",
 						"          City,",
 						"          CountryRegion,",
-						"          PostalCode,",
-						"          SingleAddressLine",
+						"          PostalCode",
 						"     )) ~> sinkToLoadCustomerandhisAdressdata"
 					]
 				}

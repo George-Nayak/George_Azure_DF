@@ -17,7 +17,8 @@
 		},
 		"AzureSqlDatabaseConnection_connectionString": {
 			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'AzureSqlDatabaseConnection'"
+			"metadata": "Secure string for 'connectionString' of 'AzureSqlDatabaseConnection'",
+			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=practicedb10.database.windows.net;Initial Catalog=practicedb;User ID=sqladmin"
 		},
 		"2ndAzureDataLakeStorageconnection_properties_typeProperties_url": {
 			"type": "string",
@@ -29,7 +30,7 @@
 		},
 		"AzureKeyVaultconnection_properties_typeProperties_baseUrl": {
 			"type": "string",
-			"defaultValue": "https://practiceKeyvault10.vault.azure.net/"
+			"defaultValue": "https://practicekeyvault100.vault.azure.net/"
 		},
 		"UpdatedAzureKeyVaultConnection_properties_typeProperties_baseUrl": {
 			"type": "string",
