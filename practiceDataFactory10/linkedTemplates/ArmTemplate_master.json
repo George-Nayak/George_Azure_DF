@@ -69,9 +69,6 @@
 					"AzureDataLakeStorageConnection_accountKey": {
 						"value": "[parameters('AzureDataLakeStorageConnection_accountKey')]"
 					},
-					"AzureSqlDatabaseConnection_connectionString": {
-						"value": "[parameters('AzureSqlDatabaseConnection_connectionString')]"
-					},
 					"2ndAzureDataLakeStorageconnection_properties_typeProperties_url": {
 						"value": "[parameters('2ndAzureDataLakeStorageconnection_properties_typeProperties_url')]"
 					},
@@ -101,6 +98,9 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"AzureSqlDatabaseConnection_connectionString": {
+						"value": "[parameters('AzureSqlDatabaseConnection_connectionString')]"
 					}
 				}
 			},
