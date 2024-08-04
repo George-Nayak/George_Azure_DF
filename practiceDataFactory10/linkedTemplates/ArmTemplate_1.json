@@ -551,7 +551,7 @@
 									"userProperties": [],
 									"typeProperties": {
 										"expression": {
-											"value": "@greater(activity('Get MetadatasizeofeachFile').output.size, 5120)",
+											"value": "@less(activity('Get MetadatasizeofeachFile').output.size, 5120)",
 											"type": "Expression"
 										},
 										"ifTrueActivities": [
