@@ -100,7 +100,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "@less(activity('Get MetadatasizeofeachFile').output.size, 5120)",
+									"value": "@and(greater(activity('Get MetadatasizeofeachFile').output.size, 5120), endswith(item().name, '.csv'))\n",
 									"type": "Expression"
 								},
 								"ifTrueActivities": [
