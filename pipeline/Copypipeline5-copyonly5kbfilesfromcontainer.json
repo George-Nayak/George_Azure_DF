@@ -1,5 +1,5 @@
 {
-	"name": "Copypipeline2-copyonly5kbfilesfromcontainer",
+	"name": "Copypipeline5-copyonly5kbfilesfromcontainer",
 	"properties": {
 		"activities": [
 			{
