@@ -1,0 +1,21 @@
+{
+	"name": "OnPremSqlServer",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "SqlServer",
+		"typeProperties": {
+			"server": "LAPTOP-NIA8JHJN\\SQLEXPRESS",
+			"database": "sportsDB",
+			"encrypt": "optional",
+			"trustServerCertificate": false,
+			"authenticationType": "SQL",
+			"userName": "superadmin",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiJiMjU2Y2M5Yy05YzA5LTRiZDYtYjBhMi1hMDU4ODAwNTFhNDAiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+		},
+		"connectVia": {
+			"referenceName": "integrationRuntimeSelfHosted",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
