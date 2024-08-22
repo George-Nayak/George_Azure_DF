@@ -14,6 +14,9 @@
 		"AzureSqlDatabaseConnection_connectionString": {
 			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=practicedb10.database.windows.net;Initial Catalog=practicedb;User ID=sqladmin"
 		},
+		"OnPremSqlServer_password": {
+			"value": ""
+		},
 		"2ndAzureDataLakeStorageconnection_properties_typeProperties_url": {
 			"value": "https://2ndpracticedatalake10.dfs.core.windows.net/"
 		},
@@ -25,6 +28,15 @@
 		},
 		"UpdatedAzureKeyVaultConnection_properties_typeProperties_baseUrl": {
 			"value": "https://practicekeyvault100.vault.azure.net/"
+		},
+		"OnPremSqlServer_properties_typeProperties_server": {
+			"value": "LAPTOP-NIA8JHJN\\SQLEXPRESS"
+		},
+		"OnPremSqlServer_properties_typeProperties_database": {
+			"value": "sportsDB"
+		},
+		"OnPremSqlServer_properties_typeProperties_userName": {
+			"value": "superadmin"
 		},
 		"containerUri": {
 			"value": ""

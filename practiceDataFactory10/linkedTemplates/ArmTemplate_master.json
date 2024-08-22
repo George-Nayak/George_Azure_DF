@@ -20,6 +20,10 @@
 			"metadata": "Secure string for 'connectionString' of 'AzureSqlDatabaseConnection'",
 			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=practicedb10.database.windows.net;Initial Catalog=practicedb;User ID=sqladmin"
 		},
+		"OnPremSqlServer_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'OnPremSqlServer'"
+		},
 		"2ndAzureDataLakeStorageconnection_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://2ndpracticedatalake10.dfs.core.windows.net/"
@@ -35,6 +39,18 @@
 		"UpdatedAzureKeyVaultConnection_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://practicekeyvault100.vault.azure.net/"
+		},
+		"OnPremSqlServer_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "LAPTOP-NIA8JHJN\\SQLEXPRESS"
+		},
+		"OnPremSqlServer_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "sportsDB"
+		},
+		"OnPremSqlServer_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "superadmin"
 		},
 		"containerUri": {
 			"type": "string",
@@ -101,6 +117,18 @@
 					},
 					"AzureSqlDatabaseConnection_connectionString": {
 						"value": "[parameters('AzureSqlDatabaseConnection_connectionString')]"
+					},
+					"OnPremSqlServer_password": {
+						"value": "[parameters('OnPremSqlServer_password')]"
+					},
+					"OnPremSqlServer_properties_typeProperties_server": {
+						"value": "[parameters('OnPremSqlServer_properties_typeProperties_server')]"
+					},
+					"OnPremSqlServer_properties_typeProperties_database": {
+						"value": "[parameters('OnPremSqlServer_properties_typeProperties_database')]"
+					},
+					"OnPremSqlServer_properties_typeProperties_userName": {
+						"value": "[parameters('OnPremSqlServer_properties_typeProperties_userName')]"
 					}
 				}
 			},
