@@ -1,0 +1,23 @@
+{
+	"name": "PracticeSqlDatabaseConnection",
+	"properties": {
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"server": "practicedb10.database.windows.net",
+			"database": "practicedb",
+			"encrypt": "mandatory",
+			"trustServerCertificate": false,
+			"authenticationType": "SQL",
+			"userName": "sqladmin",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "PracticeAzureKeyVaultConnection",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "dbpassword"
+			}
+		}
+	}
+}
