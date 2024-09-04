@@ -44,7 +44,7 @@
 				"          NewCountry = iif(isNull(Country), 'Unknown', upper(Country))) ~> derivedColumnFromEmpData",
 				"derivedColumnFromEmpData sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     partitionFileNames:['DerivedCountryData'],",
+				"     partitionFileNames:['DerivedCountryData.csv'],",
 				"     umask: 0022,",
 				"     preCommands: [],",
 				"     postCommands: [],",
