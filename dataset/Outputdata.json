@@ -1,5 +1,5 @@
 {
-	"name": "Joineddata",
+	"name": "Outputdata",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "PracticeDataLakeStorage",

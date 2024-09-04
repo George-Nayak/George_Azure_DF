@@ -25,7 +25,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "Joineddata",
+						"referenceName": "Outputdata",
 						"type": "DatasetReference"
 					},
 					"name": "destinationData"
