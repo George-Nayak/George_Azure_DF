@@ -1,0 +1,54 @@
+{
+	"name": "dataflow3_Aggregate_operation",
+	"properties": {
+		"folder": {
+			"name": "Practice"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "empData",
+						"type": "DatasetReference"
+					},
+					"name": "empData"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Outputdata",
+						"type": "DatasetReference"
+					},
+					"name": "OutputData"
+				}
+			],
+			"transformations": [
+				{
+					"name": "aggregateDepartments"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          empid as string,",
+				"          empname as string,",
+				"          Salary as string,",
+				"          DeptID as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> empData",
+				"empData aggregate(groupBy(DeptID),",
+				"     TotalCounnt = count(DeptID)) ~> aggregateDepartments",
+				"aggregateDepartments sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> OutputData"
+			]
+		}
+	}
+}
