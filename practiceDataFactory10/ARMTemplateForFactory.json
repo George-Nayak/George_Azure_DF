@@ -160,6 +160,7 @@
 								"parameters": {},
 								"datasetParameters": {
 									"empData": {},
+									"Deptdata": {},
 									"OutputData": {}
 								}
 							},
@@ -523,6 +524,13 @@
 								"type": "DatasetReference"
 							},
 							"name": "empData"
+						},
+						{
+							"dataset": {
+								"referenceName": "deptData",
+								"type": "DatasetReference"
+							},
+							"name": "Deptdata"
 						}
 					],
 					"sinks": [
@@ -537,6 +545,9 @@
 					"transformations": [
 						{
 							"name": "aggregateDepartments"
+						},
+						{
+							"name": "joinToGetDeptName"
 						}
 					],
 					"scriptLines": [
@@ -549,20 +560,37 @@
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     ignoreNoFilesFound: false) ~> empData",
+						"source(output(",
+						"          DeptID as string,",
+						"          DeptName as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> Deptdata",
 						"empData aggregate(groupBy(DeptID),",
 						"     TotalCounnt = count(DeptID)) ~> aggregateDepartments",
-						"aggregateDepartments sink(allowSchemaDrift: true,",
+						"aggregateDepartments, Deptdata join(aggregateDepartments@DeptID == Deptdata@DeptID,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> joinToGetDeptName",
+						"joinToGetDeptName sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     umask: 0022,",
 						"     preCommands: [],",
 						"     postCommands: [],",
 						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> OutputData"
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          DeptName,",
+						"          TotalCount = TotalCounnt",
+						"     )) ~> OutputData"
 					]
 				}
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/empData')]",
+				"[concat(variables('factoryId'), '/datasets/deptData')]",
 				"[concat(variables('factoryId'), '/datasets/Outputdata')]"
 			]
 		}
