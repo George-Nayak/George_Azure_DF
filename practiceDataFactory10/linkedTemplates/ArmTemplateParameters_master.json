@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "practiceDataFactory10"
+		},
+		"PracticeDataLakeStorage_accountKey": {
+			"value": ""
+		},
+		"PracticeAzureKeyVaultConnection_properties_typeProperties_baseUrl": {
+			"value": "https://practiceKeyVaultt.vault.azure.net/"
+		},
+		"PracticeDataLakeStorage_properties_typeProperties_url": {
+			"value": "https://practicedatalakee10.dfs.core.windows.net/"
+		},
+		"PracticeSqlDatabaseConnection_properties_typeProperties_server": {
+			"value": "practicedb10.database.windows.net"
+		},
+		"PracticeSqlDatabaseConnection_properties_typeProperties_database": {
+			"value": "practicedb"
+		},
+		"PracticeSqlDatabaseConnection_properties_typeProperties_userName": {
+			"value": "sqladmin"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}
