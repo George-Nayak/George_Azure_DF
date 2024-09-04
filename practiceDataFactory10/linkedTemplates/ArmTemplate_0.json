@@ -446,6 +446,108 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/dataflow4_Conditional_Split')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Practice"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "empData",
+								"type": "DatasetReference"
+							},
+							"name": "empData"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Outputdata",
+								"type": "DatasetReference"
+							},
+							"name": "outputdata"
+						},
+						{
+							"dataset": {
+								"referenceName": "Outputdata",
+								"type": "DatasetReference"
+							},
+							"name": "softwareOutputData"
+						},
+						{
+							"dataset": {
+								"referenceName": "Outputdata",
+								"type": "DatasetReference"
+							},
+							"name": "DataEmployeeData"
+						}
+					],
+					"transformations": [
+						{
+							"name": "splitFromDeparments"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          empid as string,",
+						"          empname as string,",
+						"          Salary as string,",
+						"          DeptID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> empData",
+						"empData split(equals(DeptID, '1'),",
+						"     equals(DeptID, '2'),",
+						"     equals(DeptID, '3'),",
+						"     disjoint: false) ~> splitFromDeparments@(HrEmployee, SoftwareEmployee, DataEmployee, Default)",
+						"splitFromDeparments@HrEmployee sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> outputdata",
+						"splitFromDeparments@SoftwareEmployee sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          empid,",
+						"          empname,",
+						"          Salary,",
+						"          DeptID",
+						"     )) ~> softwareOutputData",
+						"splitFromDeparments@DataEmployee sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          empid,",
+						"          empname,",
+						"          Salary,",
+						"          DeptID",
+						"     )) ~> DataEmployeeData"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/empData')]",
+				"[concat(variables('factoryId'), '/datasets/Outputdata')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -592,6 +694,57 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/dataflow3_Aggregate_operation')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline4')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow4-Conditional Split",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dataflow4_Conditional_Split",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"empData": {},
+									"outputdata": {},
+									"softwareOutputData": {},
+									"DataEmployeeData": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Practice"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/dataflow4_Conditional_Split')]"
 			]
 		}
 	]
