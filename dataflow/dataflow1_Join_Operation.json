@@ -1,6 +1,9 @@
 {
 	"name": "dataflow1_Join_Operation",
 	"properties": {
+		"folder": {
+			"name": "Practice"
+		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
