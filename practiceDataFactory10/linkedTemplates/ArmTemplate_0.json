@@ -67,7 +67,7 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/Joineddata')]",
+			"name": "[concat(parameters('factoryName'), '/Outputdata')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -244,7 +244,7 @@
 					"sinks": [
 						{
 							"dataset": {
-								"referenceName": "Joineddata",
+								"referenceName": "Outputdata",
 								"type": "DatasetReference"
 							},
 							"name": "destinationData"
@@ -296,7 +296,66 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/empData')]",
 				"[concat(variables('factoryId'), '/datasets/deptData')]",
-				"[concat(variables('factoryId'), '/datasets/Joineddata')]"
+				"[concat(variables('factoryId'), '/datasets/Outputdata')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow2_Filter_operation')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Practice"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "empData",
+								"type": "DatasetReference"
+							},
+							"name": "empdata"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Outputdata",
+								"type": "DatasetReference"
+							},
+							"name": "FilteredOutputData"
+						}
+					],
+					"transformations": [
+						{
+							"name": "filterEmpData"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          empid as string,",
+						"          empname as string,",
+						"          Salary as string,",
+						"          DeptID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> empdata",
+						"empdata filter(equals(DeptID,'3')) ~> filterEmpData",
+						"filterEmpData sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> FilteredOutputData"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/empData')]",
+				"[concat(variables('factoryId'), '/datasets/Outputdata')]"
 			]
 		},
 		{
@@ -344,6 +403,52 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/dataflow1_Join_Operation')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow2-Filter operation",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dataflow2_Filter_operation",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"empdata": {},
+									"FilteredOutputData": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/dataflow2_Filter_operation')]"
 			]
 		}
 	]
