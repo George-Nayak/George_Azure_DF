@@ -559,6 +559,93 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/dataflow12_surrogate_key')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Practice"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "empData",
+								"type": "DatasetReference"
+							},
+							"name": "empData"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Outputdata",
+								"type": "DatasetReference"
+							},
+							"name": "outputData"
+						}
+					],
+					"transformations": [
+						{
+							"name": "surrogateKey1"
+						},
+						{
+							"name": "select1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          empid as string,",
+						"          empname as string,",
+						"          Gender as string,",
+						"          Country as string,",
+						"          Salary as string,",
+						"          DeptID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> empData",
+						"empData keyGenerate(output(surrogate_key as long),",
+						"     startAt: 1L,",
+						"     stepValue: 1L) ~> surrogateKey1",
+						"surrogateKey1 select(mapColumn(",
+						"          surrogate_key,",
+						"          empid,",
+						"          empname,",
+						"          Gender,",
+						"          Country,",
+						"          Salary,",
+						"          DeptID",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     partitionFileNames:['surrogatekey.csv'],",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          surrogate_key,",
+						"          empname,",
+						"          Gender,",
+						"          Country,",
+						"          Salary,",
+						"          DeptID",
+						"     ),",
+						"     partitionBy('hash', 1)) ~> outputData"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/empData')]",
+				"[concat(variables('factoryId'), '/datasets/Outputdata')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/dataflow1_Join_Operation')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -1130,85 +1217,6 @@
 				"[concat(variables('factoryId'), '/datasets/HrData')]",
 				"[concat(variables('factoryId'), '/datasets/softwareData')]",
 				"[concat(variables('factoryId'), '/datasets/Datadata')]",
-				"[concat(variables('factoryId'), '/datasets/Outputdata')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/dataflow8_lookup_operation')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "Practice"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "empData",
-								"type": "DatasetReference"
-							},
-							"name": "empData"
-						},
-						{
-							"dataset": {
-								"referenceName": "deptData",
-								"type": "DatasetReference"
-							},
-							"name": "deptData"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "Outputdata",
-								"type": "DatasetReference"
-							},
-							"name": "outputData"
-						}
-					],
-					"transformations": [
-						{
-							"name": "lookupMatchingEmpData"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          empid as string,",
-						"          empname as string,",
-						"          Salary as string,",
-						"          DeptID as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> empData",
-						"source(output(",
-						"          DeptID as string,",
-						"          DeptName as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> deptData",
-						"empData, deptData lookup(empData@DeptID == deptData@DeptID,",
-						"     multiple: false,",
-						"     pickup: 'any',",
-						"     broadcast: 'auto')~> lookupMatchingEmpData",
-						"lookupMatchingEmpData sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     partitionFileNames:['lookup.csv'],",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> outputData"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/empData')]",
-				"[concat(variables('factoryId'), '/datasets/deptData')]",
 				"[concat(variables('factoryId'), '/datasets/Outputdata')]"
 			]
 		}
