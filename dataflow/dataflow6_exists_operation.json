@@ -1,0 +1,54 @@
+{
+	"name": "dataflow6_exists_operation",
+	"properties": {
+		"folder": {
+			"name": "Practice"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "empData",
+						"type": "DatasetReference"
+					},
+					"name": "empData"
+				},
+				{
+					"dataset": {
+						"referenceName": "deptData",
+						"type": "DatasetReference"
+					},
+					"name": "deptData"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "existsDepartemsData"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          empid as string,",
+				"          empname as string,",
+				"          Salary as string,",
+				"          DeptID as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> empData",
+				"source(output(",
+				"          DeptID as string,",
+				"          DeptName as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> deptData",
+				"empData, deptData exists(empData@DeptID == deptData@DeptID,",
+				"     negate:false,",
+				"     broadcast: 'auto')~> existsDepartemsData"
+			]
+		}
+	}
+}
