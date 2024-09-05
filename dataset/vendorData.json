@@ -1,0 +1,44 @@
+{
+	"name": "vendorData",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "PracticeDataLakeStorage",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Practice"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "vendor.csv",
+				"folderPath": "input data",
+				"fileSystem": "data"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "PO",
+				"type": "String"
+			},
+			{
+				"name": "Vender",
+				"type": "String"
+			},
+			{
+				"name": "Apple",
+				"type": "String"
+			},
+			{
+				"name": "Mango",
+				"type": "String"
+			}
+		]
+	}
+}
