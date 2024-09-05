@@ -1,0 +1,88 @@
+{
+	"name": "dataflow7_union_operation",
+	"properties": {
+		"folder": {
+			"name": "Practice"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "HrData",
+						"type": "DatasetReference"
+					},
+					"name": "HrData"
+				},
+				{
+					"dataset": {
+						"referenceName": "softwareData",
+						"type": "DatasetReference"
+					},
+					"name": "SoftwareData"
+				},
+				{
+					"dataset": {
+						"referenceName": "Datadata",
+						"type": "DatasetReference"
+					},
+					"name": "Datadata"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Outputdata",
+						"type": "DatasetReference"
+					},
+					"name": "outputData"
+				}
+			],
+			"transformations": [
+				{
+					"name": "unionAllEmployeesData"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          empid as string,",
+				"          empname as string,",
+				"          Salary as string,",
+				"          DeptID as string,",
+				"          Country as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> HrData",
+				"source(output(",
+				"          empid as string,",
+				"          empname as string,",
+				"          Salary as string,",
+				"          DeptID as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> SoftwareData",
+				"source(output(",
+				"          empid as string,",
+				"          empname as string,",
+				"          Salary as string,",
+				"          DeptID as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> Datadata",
+				"HrData, SoftwareData, Datadata union(byName: true)~> unionAllEmployeesData",
+				"unionAllEmployeesData sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['unionAllEmp.csv'],",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> outputData"
+			]
+		}
+	}
+}
