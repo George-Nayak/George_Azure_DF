@@ -87,6 +87,55 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/pipeline10')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow10 pivot operation",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dataflow10_pivot_operation",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"empData": {},
+									"outputData": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Practice"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/dataflow10_pivot_operation')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pipeline2')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -697,6 +746,14 @@
 						"type": "String"
 					},
 					{
+						"name": "Gender",
+						"type": "String"
+					},
+					{
+						"name": "Country",
+						"type": "String"
+					},
+					{
 						"name": "Salary",
 						"type": "String"
 					},
@@ -815,6 +872,73 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/PracticeAzureKeyVaultConnection')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow10_pivot_operation')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Practice"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "empData",
+								"type": "DatasetReference"
+							},
+							"name": "empData"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Outputdata",
+								"type": "DatasetReference"
+							},
+							"name": "outputData"
+						}
+					],
+					"transformations": [
+						{
+							"name": "pivotOnDeptwiseGenderEmployeeCount"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          empid as string,",
+						"          empname as string,",
+						"          Gender as string,",
+						"          Country as string,",
+						"          Salary as string,",
+						"          DeptID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> empData",
+						"empData pivot(groupBy(DeptID),",
+						"     pivotBy(Gender),",
+						"     Total = count(empid),",
+						"     columnNaming: '$N$V',",
+						"     lateral: true) ~> pivotOnDeptwiseGenderEmployeeCount",
+						"pivotOnDeptwiseGenderEmployeeCount sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     partitionFileNames:['pivotDataGenderwiseEmpcount.csv'],",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> outputData"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/empData')]",
+				"[concat(variables('factoryId'), '/datasets/Outputdata')]"
 			]
 		},
 		{
