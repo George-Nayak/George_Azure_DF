@@ -1,0 +1,44 @@
+{
+	"name": "employesSqlTable",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "PracticeSqlDatabaseConnection",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Practice"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "empid",
+				"type": "varchar"
+			},
+			{
+				"name": "empname",
+				"type": "varchar"
+			},
+			{
+				"name": "Gender",
+				"type": "varchar"
+			},
+			{
+				"name": "Country",
+				"type": "varchar"
+			},
+			{
+				"name": "Salary",
+				"type": "varchar"
+			},
+			{
+				"name": "DeptID",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "employees"
+		}
+	}
+}

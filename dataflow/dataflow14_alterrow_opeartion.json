@@ -1,0 +1,74 @@
+{
+	"name": "dataflow14_alterrow_opeartion",
+	"properties": {
+		"folder": {
+			"name": "Practice"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "empData",
+						"type": "DatasetReference"
+					},
+					"name": "empData"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "employesSqlTable",
+						"type": "DatasetReference"
+					},
+					"name": "outPutData"
+				}
+			],
+			"transformations": [
+				{
+					"name": "alterRowForGender"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          empid as string,",
+				"          empname as string,",
+				"          Gender as string,",
+				"          Country as string,",
+				"          Salary as string,",
+				"          DeptID as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> empData",
+				"empData alterRow(deleteIf(Gender == 'Female')) ~> alterRowForGender",
+				"alterRowForGender sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          empid as string,",
+				"          empname as string,",
+				"          Gender as string,",
+				"          Country as string,",
+				"          Salary as string,",
+				"          DeptID as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          empid,",
+				"          empname,",
+				"          Gender,",
+				"          Country,",
+				"          Salary,",
+				"          DeptID",
+				"     )) ~> outPutData"
+			]
+		}
+	}
+}
