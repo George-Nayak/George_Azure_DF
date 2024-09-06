@@ -1035,7 +1035,7 @@
 						"     deletable:false,",
 						"     insertable:true,",
 						"     updateable:true,",
-						"     upsertable:false,",
+						"     upsertable:true,",
 						"     keys:['empid'],",
 						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
