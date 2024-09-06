@@ -42,7 +42,7 @@
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> empData",
 				"empData alterRow(deleteIf(Gender=='Female'),",
-				"     updateIf(DeptID=='2')) ~> alterRowForGender",
+				"     upsertIf(DeptID=='2')) ~> alterRowForGender",
 				"alterRowForGender sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
