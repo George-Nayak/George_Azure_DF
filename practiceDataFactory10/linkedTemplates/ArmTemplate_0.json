@@ -208,6 +208,9 @@
 					"referenceName": "PracticeDataLakeStorage",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "Practice"
+				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
@@ -404,6 +407,9 @@
 						"type": "string"
 					}
 				},
+				"folder": {
+					"name": "Practice"
+				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
@@ -456,6 +462,9 @@
 					"filename": {
 						"type": "string"
 					}
+				},
+				"folder": {
+					"name": "Practice"
 				},
 				"annotations": [],
 				"type": "DelimitedText",
