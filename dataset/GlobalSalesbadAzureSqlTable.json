@@ -1,0 +1,41 @@
+{
+	"name": "GlobalSalesbadAzureSqlTable",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "PracticeSqlDatabaseConnection",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Practice"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "saleDate",
+				"type": "varchar"
+			},
+			{
+				"name": "saleItem",
+				"type": "varchar"
+			},
+			{
+				"name": "country",
+				"type": "varchar"
+			},
+			{
+				"name": "quantity",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "fileName",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "sales_data_bad"
+		}
+	}
+}

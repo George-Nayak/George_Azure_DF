@@ -1,0 +1,112 @@
+{
+	"name": "dataflow16_error_rows_handle",
+	"properties": {
+		"folder": {
+			"name": "Practice"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "SalesDataINDMay",
+						"type": "DatasetReference"
+					},
+					"name": "Salesdatamay"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "GlobalSalesbadAzureSqlTable",
+						"type": "DatasetReference"
+					},
+					"name": "SqlTableLoadbadSalesData"
+				},
+				{
+					"dataset": {
+						"referenceName": "GlobalSalesdataSqlTable",
+						"type": "DatasetReference"
+					},
+					"name": "goodSalesDataLoadToSQLTable"
+				}
+			],
+			"transformations": [
+				{
+					"name": "splitOnDateColumn"
+				},
+				{
+					"name": "derivedColumnForFileName"
+				},
+				{
+					"name": "derivedColumnForFileNameGoodSales"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          saleDate as string,",
+				"          saleItem as string,",
+				"          country as string,",
+				"          quantity as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> Salesdatamay",
+				"Salesdatamay split(isNull(toDate(saleDate, 'dd-MMM-yyyy')),",
+				"     disjoint: false) ~> splitOnDateColumn@(ErrorRows, GoodRows)",
+				"splitOnDateColumn@ErrorRows derive(fileName = 'Global_sales_IND_May_2020_01.csv') ~> derivedColumnForFileName",
+				"splitOnDateColumn@GoodRows derive(fileName = 'Global_sales_IND_May_2020_01.csv',",
+				"          saleDate = toDate(saleDate, 'dd-MMM-yyyy'),",
+				"          quantity = toInteger(quantity)) ~> derivedColumnForFileNameGoodSales",
+				"derivedColumnForFileName sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          saleDate as string,",
+				"          saleItem as string,",
+				"          country as string,",
+				"          quantity as integer,",
+				"          fileName as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          saleDate,",
+				"          saleItem,",
+				"          country,",
+				"          quantity,",
+				"          fileName",
+				"     )) ~> SqlTableLoadbadSalesData",
+				"derivedColumnForFileNameGoodSales sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          saleDate as date,",
+				"          saleItem as string,",
+				"          country as string,",
+				"          quantity as integer,",
+				"          fileName as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          saleDate,",
+				"          saleItem,",
+				"          country,",
+				"          quantity,",
+				"          fileName",
+				"     )) ~> goodSalesDataLoadToSQLTable"
+			]
+		}
+	}
+}
