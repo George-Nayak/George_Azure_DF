@@ -13,6 +13,297 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/pipeline8')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow8 lookup operation",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dataflow8_lookup_operation",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"empData": {},
+									"deptData": {},
+									"outputData": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Practice"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline9')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow9 new_branch_operation",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dataflow9_new_branch_operation",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"empData": {},
+									"DeptData": {},
+									"outputData": {},
+									"outputDataNewbranch": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Practice"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow14_alterrow_opeartion')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Practice"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "empData",
+								"type": "DatasetReference"
+							},
+							"name": "empData"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "employesSqlTable",
+								"type": "DatasetReference"
+							},
+							"name": "outPutData"
+						}
+					],
+					"transformations": [
+						{
+							"name": "alterRowForGender"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          empid as string,",
+						"          empname as string,",
+						"          Gender as string,",
+						"          Country as string,",
+						"          Salary as string,",
+						"          DeptID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> empData",
+						"empData alterRow(deleteIf(Gender=='Female'),",
+						"     upsertIf(DeptID=='2')) ~> alterRowForGender",
+						"alterRowForGender sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          empid as string,",
+						"          empname as string,",
+						"          Gender as string,",
+						"          Country as string,",
+						"          Salary as string,",
+						"          DeptID as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:true,",
+						"     upsertable:true,",
+						"     keys:['empid'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          empid,",
+						"          empname,",
+						"          Gender,",
+						"          Country,",
+						"          Salary,",
+						"          DeptID",
+						"     )) ~> outPutData"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow16_error_rows_handle')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Practice"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "SalesDataINDMay",
+								"type": "DatasetReference"
+							},
+							"name": "Salesdatamay"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "GlobalSalesbadAzureSqlTable",
+								"type": "DatasetReference"
+							},
+							"name": "SqlTableLoadbadSalesData"
+						},
+						{
+							"dataset": {
+								"referenceName": "GlobalSalesdataSqlTable",
+								"type": "DatasetReference"
+							},
+							"name": "goodSalesDataLoadToSQLTable"
+						}
+					],
+					"transformations": [
+						{
+							"name": "splitOnDateColumn"
+						},
+						{
+							"name": "derivedColumnForFileName"
+						},
+						{
+							"name": "derivedColumnForFileNameGoodSales"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          saleDate as string,",
+						"          saleItem as string,",
+						"          country as string,",
+						"          quantity as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> Salesdatamay",
+						"Salesdatamay split(isNull(toDate(saleDate, 'dd-MMM-yyyy')),",
+						"     disjoint: false) ~> splitOnDateColumn@(ErrorRows, GoodRows)",
+						"splitOnDateColumn@ErrorRows derive(fileName = 'Global_sales_IND_May_2020_01.csv') ~> derivedColumnForFileName",
+						"splitOnDateColumn@GoodRows derive(fileName = 'Global_sales_IND_May_2020_01.csv',",
+						"          saleDate = toDate(saleDate, 'dd-MMM-yyyy'),",
+						"          quantity = toInteger(quantity)) ~> derivedColumnForFileNameGoodSales",
+						"derivedColumnForFileName sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          saleDate as string,",
+						"          saleItem as string,",
+						"          country as string,",
+						"          quantity as integer,",
+						"          fileName as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          saleDate,",
+						"          saleItem,",
+						"          country,",
+						"          quantity,",
+						"          fileName",
+						"     )) ~> SqlTableLoadbadSalesData",
+						"derivedColumnForFileNameGoodSales sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          saleDate as date,",
+						"          saleItem as string,",
+						"          country as string,",
+						"          quantity as integer,",
+						"          fileName as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          saleDate,",
+						"          saleItem,",
+						"          country,",
+						"          quantity,",
+						"          fileName",
+						"     )) ~> goodSalesDataLoadToSQLTable"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pipeline14')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -57,7 +348,56 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/dataflow14_alterrow_opeartion')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline16')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow16 error_rows_handle",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dataflow16_error_rows_handle",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"Salesdatamay": {},
+									"SqlTableLoadbadSalesData": {},
+									"goodSalesDataLoadToSQLTable": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/dataflow16_error_rows_handle')]"
+			]
 		}
 	]
 }
