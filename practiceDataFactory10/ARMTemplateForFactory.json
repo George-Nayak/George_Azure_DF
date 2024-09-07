@@ -273,6 +273,9 @@
 				"policy": {
 					"elapsedTimeMetric": {}
 				},
+				"folder": {
+					"name": "Practice"
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -428,6 +431,9 @@
 				"policy": {
 					"elapsedTimeMetric": {}
 				},
+				"folder": {
+					"name": "Practice"
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -565,6 +571,9 @@
 				],
 				"policy": {
 					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Practice"
 				},
 				"annotations": []
 			},
