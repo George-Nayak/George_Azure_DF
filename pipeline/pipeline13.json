@@ -27,6 +27,9 @@
 				}
 			}
 		],
+		"folder": {
+			"name": "Practice"
+		},
 		"annotations": []
 	}
 }
