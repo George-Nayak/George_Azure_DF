@@ -42,7 +42,7 @@
 					"name": "sortInAsendingOrder"
 				},
 				{
-					"name": "derivedColumn1"
+					"name": "derivedColumnConvertStringToInteger"
 				}
 			],
 			"scriptLines": [
@@ -70,9 +70,9 @@
 				"     ignoreNoFilesFound: false) ~> NewEmpData",
 				"oldEMpData, NewEmpData union(byName: true)~> union1",
 				"union1 aggregate(groupBy(empid),",
-				"     each(match(name != 'empid'), $$ = first($$))) ~> aggregateToProcessIncrementalRows",
-				"derivedColumn1 sort(asc(empid, true)) ~> sortInAsendingOrder",
-				"aggregateToProcessIncrementalRows derive(empid = toInteger(empid)) ~> derivedColumn1",
+				"     each(match(name!='empid'), $$ = first($$))) ~> aggregateToProcessIncrementalRows",
+				"derivedColumnConvertStringToInteger sort(asc(empid, true)) ~> sortInAsendingOrder",
+				"aggregateToProcessIncrementalRows derive(empid = toInteger(empid)) ~> derivedColumnConvertStringToInteger",
 				"sortInAsendingOrder sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     partitionFileNames:['incrementalEmpData.csv'],",
