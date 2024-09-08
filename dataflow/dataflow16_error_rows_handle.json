@@ -2,7 +2,7 @@
 	"name": "dataflow16_error_rows_handle",
 	"properties": {
 		"folder": {
-			"name": "Practice"
+			"name": "Real Time scenarios"
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
