@@ -1749,6 +1749,9 @@
 					"referenceName": "PracticeDataLakeStorage",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "RealTime Datasets"
+				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
@@ -1781,6 +1784,9 @@
 				"linkedServiceName": {
 					"referenceName": "PracticeDataLakeStorage",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "RealTime Datasets"
 				},
 				"annotations": [],
 				"type": "DelimitedText",
