@@ -588,7 +588,15 @@
 						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sqlOutputData"
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          empid,",
+						"          empname,",
+						"          Gender,",
+						"          Country,",
+						"          Salary,",
+						"          DeptID",
+						"     )) ~> sqlOutputData"
 					]
 				}
 			},
