@@ -66,15 +66,6 @@
 					},
 					"PracticeDataLakeStorage_properties_typeProperties_url": {
 						"value": "[parameters('PracticeDataLakeStorage_properties_typeProperties_url')]"
-					},
-					"PracticeSqlDatabaseConnection_properties_typeProperties_server": {
-						"value": "[parameters('PracticeSqlDatabaseConnection_properties_typeProperties_server')]"
-					},
-					"PracticeSqlDatabaseConnection_properties_typeProperties_database": {
-						"value": "[parameters('PracticeSqlDatabaseConnection_properties_typeProperties_database')]"
-					},
-					"PracticeSqlDatabaseConnection_properties_typeProperties_userName": {
-						"value": "[parameters('PracticeSqlDatabaseConnection_properties_typeProperties_userName')]"
 					}
 				}
 			},
@@ -93,6 +84,15 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"PracticeSqlDatabaseConnection_properties_typeProperties_server": {
+						"value": "[parameters('PracticeSqlDatabaseConnection_properties_typeProperties_server')]"
+					},
+					"PracticeSqlDatabaseConnection_properties_typeProperties_database": {
+						"value": "[parameters('PracticeSqlDatabaseConnection_properties_typeProperties_database')]"
+					},
+					"PracticeSqlDatabaseConnection_properties_typeProperties_userName": {
+						"value": "[parameters('PracticeSqlDatabaseConnection_properties_typeProperties_userName')]"
 					}
 				}
 			},

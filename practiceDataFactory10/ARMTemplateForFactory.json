@@ -1023,6 +1023,56 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/pipeline23')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow19 ncremental_key_from_existing_source",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dataflow19_incremental_key_from_existing_source",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"oldEmpData": {},
+									"newDatasetWithoutEmpid": {},
+									"outputData": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Real Time scenario"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/dataflow19_incremental_key_from_existing_source')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pipeline3')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -1609,6 +1659,104 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Increment_existing_key_data')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PracticeDataLakeStorage",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "RealTime Datasets"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "incremet_emp_idFromexisting_source_EMP_DATA.csv",
+						"folderPath": "input data",
+						"fileSystem": "data"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "empname",
+						"type": "String"
+					},
+					{
+						"name": "Gender",
+						"type": "String"
+					},
+					{
+						"name": "Country",
+						"type": "String"
+					},
+					{
+						"name": "Salary",
+						"type": "String"
+					},
+					{
+						"name": "DeptID",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/PracticeDataLakeStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/OutputIncremenetedData')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PracticeDataLakeStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "output data",
+						"fileSystem": "data"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "empid",
+						"type": "String"
+					},
+					{
+						"name": "empname",
+						"type": "String"
+					},
+					{
+						"name": "Salary",
+						"type": "String"
+					},
+					{
+						"name": "DeptID",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/PracticeDataLakeStorage')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Outputdata')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1937,6 +2085,63 @@
 						"type": "AzureBlobFSLocation",
 						"fileName": "empdata_new.csv",
 						"folderPath": "input data",
+						"fileSystem": "data"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "empid",
+						"type": "String"
+					},
+					{
+						"name": "empname",
+						"type": "String"
+					},
+					{
+						"name": "Gender",
+						"type": "String"
+					},
+					{
+						"name": "Country",
+						"type": "String"
+					},
+					{
+						"name": "Salary",
+						"type": "String"
+					},
+					{
+						"name": "DeptID",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/PracticeDataLakeStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/old_empDataFromWhichIncrementKeysStart')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PracticeDataLakeStorage",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "RealTime Datasets"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "incrementalEmpData.csv",
+						"folderPath": "output data",
 						"fileSystem": "data"
 					},
 					"columnDelimiter": ",",
@@ -3033,6 +3238,133 @@
 				"[concat(variables('factoryId'), '/datasets/empData')]",
 				"[concat(variables('factoryId'), '/datasets/newEmpData')]",
 				"[concat(variables('factoryId'), '/datasets/Outputdata')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow19_incremental_key_from_existing_source')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Real Time scenarios"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "old_empDataFromWhichIncrementKeysStart",
+								"type": "DatasetReference"
+							},
+							"name": "oldEmpData"
+						},
+						{
+							"dataset": {
+								"referenceName": "Increment_existing_key_data",
+								"type": "DatasetReference"
+							},
+							"name": "newDatasetWithoutEmpid"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "OutputIncremenetedData",
+								"type": "DatasetReference"
+							},
+							"name": "outputData"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumnDummyToGetMaxvalueOfID"
+						},
+						{
+							"name": "aggregateMaxEmpId"
+						},
+						{
+							"name": "joinDummyMaxStreamtonewEMPdata"
+						},
+						{
+							"name": "surrogateKeyAddempId"
+						},
+						{
+							"name": "derivedColumnIncrementedEmpIdColumn"
+						},
+						{
+							"name": "selectRequiredColumns"
+						},
+						{
+							"name": "unionOfOlddataWithIncrementedData"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          empid as string,",
+						"          empname as string,",
+						"          Gender as string,",
+						"          Country as string,",
+						"          Salary as string,",
+						"          DeptID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> oldEmpData",
+						"source(output(",
+						"          empname as string,",
+						"          Gender as string,",
+						"          Country as string,",
+						"          Salary as string,",
+						"          DeptID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> newDatasetWithoutEmpid",
+						"oldEmpData derive(dummy = 'dummy') ~> derivedColumnDummyToGetMaxvalueOfID",
+						"derivedColumnDummyToGetMaxvalueOfID aggregate(groupBy(dummy),",
+						"     MaxID = toString(max(toInteger(empid)))) ~> aggregateMaxEmpId",
+						"aggregateMaxEmpId, newDatasetWithoutEmpid join(1==1,",
+						"     joinType:'cross',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> joinDummyMaxStreamtonewEMPdata",
+						"joinDummyMaxStreamtonewEMPdata keyGenerate(output(empid as long),",
+						"     startAt: 1L,",
+						"     stepValue: 1L) ~> surrogateKeyAddempId",
+						"surrogateKeyAddempId derive(empid = toString( (toInteger(MaxID) + toInteger(empid)))) ~> derivedColumnIncrementedEmpIdColumn",
+						"derivedColumnIncrementedEmpIdColumn select(mapColumn(",
+						"          empid,",
+						"          empname,",
+						"          Gender,",
+						"          Country,",
+						"          Salary,",
+						"          DeptID",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectRequiredColumns",
+						"oldEmpData, selectRequiredColumns union(byName: true)~> unionOfOlddataWithIncrementedData",
+						"unionOfOlddataWithIncrementedData sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          empid as string,",
+						"          empname as string,",
+						"          Salary as string,",
+						"          DeptID as string",
+						"     ),",
+						"     partitionFileNames:['incrementalEmpData.csv'],",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> outputData"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/old_empDataFromWhichIncrementKeysStart')]",
+				"[concat(variables('factoryId'), '/datasets/Increment_existing_key_data')]",
+				"[concat(variables('factoryId'), '/datasets/OutputIncremenetedData')]"
 			]
 		},
 		{
