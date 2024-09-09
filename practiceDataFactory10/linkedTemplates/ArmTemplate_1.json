@@ -25,6 +25,97 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/sData')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PracticeDataLakeStorage",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"filename": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Practice"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().filename",
+							"type": "Expression"
+						},
+						"fileSystem": "sdata"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "saleDate",
+						"type": "String"
+					},
+					{
+						"name": "saleItem",
+						"type": "String"
+					},
+					{
+						"name": "country",
+						"type": "String"
+					},
+					{
+						"name": "quantity",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/sDataOutput')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PracticeDataLakeStorage",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"filename": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Practice"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().filename",
+							"type": "Expression"
+						},
+						"fileSystem": "output"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/softwareData')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -281,7 +372,10 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/sData')]",
+				"[concat(variables('factoryId'), '/datasets/sDataOutput')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/pipeline18')]",
@@ -567,6 +661,106 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/PracticeSqlDatabaseConnection')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline26')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Get Metadata to count files",
+						"type": "GetMetadata",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "DatasetToGetCount",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"fieldList": [
+								"childItems"
+							],
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							},
+							"formatSettings": {
+								"type": "DelimitedTextReadSettings"
+							}
+						}
+					},
+					{
+						"name": "Set variable",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "Get Metadata to count files",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "fileCount",
+							"value": {
+								"value": "@string(length(activity('Get Metadata to count files').output.childItems))",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "If Condition count is 4",
+						"type": "IfCondition",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(variables('fileCount'),'7')",
+								"type": "Expression"
+							},
+							"ifTrueActivities": [
+								{
+									"name": "Wait True",
+									"type": "Wait",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": 5
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"variables": {
+					"fileCount": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Real Time scenario"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/GlobalSalesbadAzureSqlTable')]",
@@ -1215,299 +1409,6 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     partitionBy('hash', 1)) ~> outputData"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/dataflow19_incremental_key_from_existing_source')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "Real Time scenarios"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "old_empDataFromWhichIncrementKeysStart",
-								"type": "DatasetReference"
-							},
-							"name": "oldEmpData"
-						},
-						{
-							"dataset": {
-								"referenceName": "Increment_existing_key_data",
-								"type": "DatasetReference"
-							},
-							"name": "newDatasetWithoutEmpid"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "OutputIncremenetedData",
-								"type": "DatasetReference"
-							},
-							"name": "outputData"
-						}
-					],
-					"transformations": [
-						{
-							"name": "derivedColumnDummyToGetMaxvalueOfID"
-						},
-						{
-							"name": "aggregateMaxEmpId"
-						},
-						{
-							"name": "joinDummyMaxStreamtonewEMPdata"
-						},
-						{
-							"name": "surrogateKeyAddempId"
-						},
-						{
-							"name": "derivedColumnIncrementedEmpIdColumn"
-						},
-						{
-							"name": "selectRequiredColumns"
-						},
-						{
-							"name": "unionOfOlddataWithIncrementedData"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          empid as string,",
-						"          empname as string,",
-						"          Gender as string,",
-						"          Country as string,",
-						"          Salary as string,",
-						"          DeptID as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> oldEmpData",
-						"source(output(",
-						"          empname as string,",
-						"          Gender as string,",
-						"          Country as string,",
-						"          Salary as string,",
-						"          DeptID as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> newDatasetWithoutEmpid",
-						"oldEmpData derive(dummy = 'dummy') ~> derivedColumnDummyToGetMaxvalueOfID",
-						"derivedColumnDummyToGetMaxvalueOfID aggregate(groupBy(dummy),",
-						"     MaxID = toString(max(toInteger(empid)))) ~> aggregateMaxEmpId",
-						"aggregateMaxEmpId, newDatasetWithoutEmpid join(1==1,",
-						"     joinType:'cross',",
-						"     matchType:'exact',",
-						"     ignoreSpaces: false,",
-						"     broadcast: 'auto')~> joinDummyMaxStreamtonewEMPdata",
-						"joinDummyMaxStreamtonewEMPdata keyGenerate(output(empid as long),",
-						"     startAt: 1L,",
-						"     stepValue: 1L) ~> surrogateKeyAddempId",
-						"surrogateKeyAddempId derive(empid = toString( (toInteger(MaxID) + toInteger(empid)))) ~> derivedColumnIncrementedEmpIdColumn",
-						"derivedColumnIncrementedEmpIdColumn select(mapColumn(",
-						"          empid,",
-						"          empname,",
-						"          Gender,",
-						"          Country,",
-						"          Salary,",
-						"          DeptID",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> selectRequiredColumns",
-						"oldEmpData, selectRequiredColumns union(byName: true)~> unionOfOlddataWithIncrementedData",
-						"unionOfOlddataWithIncrementedData sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          empid as string,",
-						"          empname as string,",
-						"          Salary as string,",
-						"          DeptID as string",
-						"     ),",
-						"     partitionFileNames:['incrementalEmpData.csv'],",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> outputData"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/dataflow1_Join_Operation')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "Practice"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "empData",
-								"type": "DatasetReference"
-							},
-							"name": "empData"
-						},
-						{
-							"dataset": {
-								"referenceName": "deptData",
-								"type": "DatasetReference"
-							},
-							"name": "deptData"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "Outputdata",
-								"type": "DatasetReference"
-							},
-							"name": "destinationData"
-						}
-					],
-					"transformations": [
-						{
-							"name": "joinBothDatasets"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          empid as string,",
-						"          empname as string,",
-						"          Salary as string,",
-						"          DeptID as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> empData",
-						"source(output(",
-						"          DeptID as string,",
-						"          DeptName as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> deptData",
-						"empData, deptData join(empData@DeptID == deptData@DeptID,",
-						"     joinType:'inner',",
-						"     matchType:'exact',",
-						"     ignoreSpaces: false,",
-						"     broadcast: 'auto')~> joinBothDatasets",
-						"joinBothDatasets sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     mapColumn(",
-						"          empid,",
-						"          empname,",
-						"          Salary,",
-						"          DeptName",
-						"     )) ~> destinationData"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/dataflow20_log_pipelinedata_using_dataflow')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "Real Time scenarios"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "dummyData",
-								"type": "DatasetReference"
-							},
-							"name": "duumyData"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "logsData",
-								"type": "DatasetReference"
-							},
-							"name": "logOutputData"
-						}
-					],
-					"transformations": [
-						{
-							"name": "derivedColumnTologPipelinelogs"
-						},
-						{
-							"name": "selectReqColumns"
-						}
-					],
-					"scriptLines": [
-						"parameters{",
-						"     adfName as string,",
-						"     pipelineName as string,",
-						"     triggerName as string,",
-						"     runId as string,",
-						"     triggerTime as string,",
-						"     status as string,",
-						"     fileName as string",
-						"}",
-						"source(output(",
-						"          Column_1 as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> duumyData",
-						"duumyData derive(adfName = $adfName,",
-						"          pipelineName = $pipelineName,",
-						"          triggerName = $triggerName,",
-						"          runId = $runId,",
-						"          triggerTime = $triggerTime,",
-						"          status = $status,",
-						"          fileName = $fileName) ~> derivedColumnTologPipelinelogs",
-						"derivedColumnTologPipelinelogs select(mapColumn(",
-						"          adfName,",
-						"          pipelineName,",
-						"          triggerName,",
-						"          runId,",
-						"          triggerTime,",
-						"          status,",
-						"          fileName",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> selectReqColumns",
-						"selectReqColumns sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          saleDate as string,",
-						"          saleItem as string,",
-						"          country as string,",
-						"          quantity as string",
-						"     ),",
-						"     partitionFileNames:[($fileName)],",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> logOutputData"
 					]
 				}
 			},
