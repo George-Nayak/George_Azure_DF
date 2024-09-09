@@ -25,6 +25,100 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/softwareData')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PracticeDataLakeStorage",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Practice"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "Software.csv",
+						"folderPath": "output data",
+						"fileSystem": "data"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "empid",
+						"type": "String"
+					},
+					{
+						"name": "empname",
+						"type": "String"
+					},
+					{
+						"name": "Salary",
+						"type": "String"
+					},
+					{
+						"name": "DeptID",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/vendorData')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PracticeDataLakeStorage",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Practice"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "vendor.csv",
+						"folderPath": "input data",
+						"fileSystem": "data"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "PO",
+						"type": "String"
+					},
+					{
+						"name": "Vender",
+						"type": "String"
+					},
+					{
+						"name": "Apple",
+						"type": "String"
+					},
+					{
+						"name": "Mango",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/PracticeSqlDatabaseConnection')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -742,7 +836,9 @@
 					]
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/vendorData')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/dataflow12_surrogate_key')]",
@@ -1328,244 +1424,90 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/dataflow2_Filter_operation')]",
+			"name": "[concat(parameters('factoryName'), '/dataflow20_log_pipelinedata_using_dataflow')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"folder": {
-					"name": "Practice"
+					"name": "Real Time scenarios"
 				},
 				"type": "MappingDataFlow",
 				"typeProperties": {
 					"sources": [
 						{
 							"dataset": {
-								"referenceName": "empData",
+								"referenceName": "dummyData",
 								"type": "DatasetReference"
 							},
-							"name": "empdata"
+							"name": "duumyData"
 						}
 					],
 					"sinks": [
 						{
 							"dataset": {
-								"referenceName": "Outputdata",
+								"referenceName": "logsData",
 								"type": "DatasetReference"
 							},
-							"name": "FilteredOutputData"
+							"name": "logOutputData"
 						}
 					],
 					"transformations": [
 						{
-							"name": "filterEmpData"
+							"name": "derivedColumnTologPipelinelogs"
+						},
+						{
+							"name": "selectReqColumns"
 						}
 					],
 					"scriptLines": [
+						"parameters{",
+						"     adfName as string,",
+						"     pipelineName as string,",
+						"     triggerName as string,",
+						"     runId as string,",
+						"     triggerTime as string,",
+						"     status as string,",
+						"     fileName as string",
+						"}",
 						"source(output(",
-						"          empid as string,",
-						"          empname as string,",
-						"          Salary as string,",
-						"          DeptID as string",
+						"          Column_1 as string",
 						"     ),",
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> empdata",
-						"empdata filter(equals(DeptID,'3')) ~> filterEmpData",
-						"filterEmpData sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
+						"     ignoreNoFilesFound: false) ~> duumyData",
+						"duumyData derive(adfName = $adfName,",
+						"          pipelineName = $pipelineName,",
+						"          triggerName = $triggerName,",
+						"          runId = $runId,",
+						"          triggerTime = $triggerTime,",
+						"          status = $status,",
+						"          fileName = $fileName) ~> derivedColumnTologPipelinelogs",
+						"derivedColumnTologPipelinelogs select(mapColumn(",
+						"          adfName,",
+						"          pipelineName,",
+						"          triggerName,",
+						"          runId,",
+						"          triggerTime,",
+						"          status,",
+						"          fileName",
+						"     ),",
 						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> FilteredOutputData"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/dataflow3_Aggregate_operation')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "Practice"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "empData",
-								"type": "DatasetReference"
-							},
-							"name": "empData"
-						},
-						{
-							"dataset": {
-								"referenceName": "deptData",
-								"type": "DatasetReference"
-							},
-							"name": "Deptdata"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "Outputdata",
-								"type": "DatasetReference"
-							},
-							"name": "OutputData"
-						}
-					],
-					"transformations": [
-						{
-							"name": "aggregateDepartments"
-						},
-						{
-							"name": "joinToGetDeptName"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          empid as string,",
-						"          empname as string,",
-						"          Salary as string,",
-						"          DeptID as string",
+						"     skipDuplicateMapOutputs: true) ~> selectReqColumns",
+						"selectReqColumns sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          saleDate as string,",
+						"          saleItem as string,",
+						"          country as string,",
+						"          quantity as string",
 						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> empData",
-						"source(output(",
-						"          DeptID as string,",
-						"          DeptName as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> Deptdata",
-						"empData aggregate(groupBy(DeptID),",
-						"     TotalCounnt = count(DeptID)) ~> aggregateDepartments",
-						"aggregateDepartments, Deptdata join(aggregateDepartments@DeptID == Deptdata@DeptID,",
-						"     joinType:'inner',",
-						"     matchType:'exact',",
-						"     ignoreSpaces: false,",
-						"     broadcast: 'auto')~> joinToGetDeptName",
-						"joinToGetDeptName sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
+						"     partitionFileNames:[($fileName)],",
 						"     umask: 0022,",
 						"     preCommands: [],",
 						"     postCommands: [],",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
-						"     mapColumn(",
-						"          DeptName,",
-						"          TotalCount = TotalCounnt",
-						"     )) ~> OutputData"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/dataflow4_Conditional_Split')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "Practice"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "empData",
-								"type": "DatasetReference"
-							},
-							"name": "empData"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "Outputdata",
-								"type": "DatasetReference"
-							},
-							"name": "outputdata"
-						},
-						{
-							"dataset": {
-								"referenceName": "Outputdata",
-								"type": "DatasetReference"
-							},
-							"name": "softwareOutputData"
-						},
-						{
-							"dataset": {
-								"referenceName": "Outputdata",
-								"type": "DatasetReference"
-							},
-							"name": "DataEmployeeData"
-						}
-					],
-					"transformations": [
-						{
-							"name": "splitFromDeparments"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          empid as string,",
-						"          empname as string,",
-						"          Salary as string,",
-						"          DeptID as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> empData",
-						"empData split(equals(DeptID, '1'),",
-						"     equals(DeptID, '2'),",
-						"     equals(DeptID, '3'),",
-						"     disjoint: false) ~> splitFromDeparments@(HrEmployee, SoftwareEmployee, DataEmployee)",
-						"splitFromDeparments@HrEmployee sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     partitionFileNames:['Hr.csv'],",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> outputdata",
-						"splitFromDeparments@SoftwareEmployee sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     partitionFileNames:['Software.csv'],",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     mapColumn(",
-						"          empid,",
-						"          empname,",
-						"          Salary,",
-						"          DeptID",
-						"     ),",
-						"     partitionBy('hash', 1)) ~> softwareOutputData",
-						"splitFromDeparments@DataEmployee sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     partitionFileNames:['Data.csv'],",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     mapColumn(",
-						"          empid,",
-						"          empname,",
-						"          Salary,",
-						"          DeptID",
-						"     ),",
-						"     partitionBy('hash', 1)) ~> DataEmployeeData"
+						"     partitionBy('hash', 1)) ~> logOutputData"
 					]
 				}
 			},

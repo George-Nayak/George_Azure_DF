@@ -1073,6 +1073,129 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/pipeline24')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow20 log_pipelinedata_using_dataflow",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Set variable File name",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dataflow20_log_pipelinedata_using_dataflow",
+								"type": "DataFlowReference",
+								"parameters": {
+									"adfName": {
+										"value": "'@{pipeline().DataFactory}'",
+										"type": "Expression"
+									},
+									"pipelineName": {
+										"value": "'@{pipeline().Pipeline}'",
+										"type": "Expression"
+									},
+									"triggerName": {
+										"value": "'@{pipeline().TriggerName}'",
+										"type": "Expression"
+									},
+									"runId": {
+										"value": "'@{pipeline().RunId}'",
+										"type": "Expression"
+									},
+									"triggerTime": {
+										"value": "'@{pipeline().TriggerTime}'",
+										"type": "Expression"
+									},
+									"status": {
+										"value": "'@{string('Success')}'",
+										"type": "Expression"
+									},
+									"fileName": {
+										"value": "'@{variables('fileName')}'",
+										"type": "Expression"
+									}
+								},
+								"datasetParameters": {
+									"duumyData": {},
+									"logOutputData": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Wait1",
+						"type": "Wait",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 10
+						}
+					},
+					{
+						"name": "Set variable File name",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "Wait1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "fileName",
+							"value": {
+								"value": "@concat(formatDateTime(utcNow(),'yyyy-MM-dd'),'_log.csv')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"variables": {
+					"fileName": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Real Time scenario"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/dataflow20_log_pipelinedata_using_dataflow')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pipeline3')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -1925,6 +2048,39 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/dummyData')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PracticeDataLakeStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "text.txt",
+						"folderPath": "input data",
+						"fileSystem": "data"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": false,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/PracticeDataLakeStorage')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/empData')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -2058,6 +2214,51 @@
 				},
 				"schema": [
 					{
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/PracticeDataLakeStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/logsData')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PracticeDataLakeStorage",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "log",
+						"fileSystem": "output"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "saleDate",
+						"type": "String"
+					},
+					{
+						"name": "saleItem",
+						"type": "String"
+					},
+					{
+						"name": "country",
+						"type": "String"
+					},
+					{
+						"name": "quantity",
 						"type": "String"
 					}
 				]
@@ -2497,8 +2698,8 @@
 				"type": "ScheduleTrigger",
 				"typeProperties": {
 					"recurrence": {
-						"frequency": "Minute",
-						"interval": 15,
+						"frequency": "Day",
+						"interval": 3,
 						"startTime": "2024-09-08T15:54:00",
 						"timeZone": "India Standard Time"
 					}
@@ -3449,6 +3650,99 @@
 				"[concat(variables('factoryId'), '/datasets/empData')]",
 				"[concat(variables('factoryId'), '/datasets/deptData')]",
 				"[concat(variables('factoryId'), '/datasets/Outputdata')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow20_log_pipelinedata_using_dataflow')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Real Time scenarios"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "dummyData",
+								"type": "DatasetReference"
+							},
+							"name": "duumyData"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "logsData",
+								"type": "DatasetReference"
+							},
+							"name": "logOutputData"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumnTologPipelinelogs"
+						},
+						{
+							"name": "selectReqColumns"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     adfName as string,",
+						"     pipelineName as string,",
+						"     triggerName as string,",
+						"     runId as string,",
+						"     triggerTime as string,",
+						"     status as string,",
+						"     fileName as string",
+						"}",
+						"source(output(",
+						"          Column_1 as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> duumyData",
+						"duumyData derive(adfName = $adfName,",
+						"          pipelineName = $pipelineName,",
+						"          triggerName = $triggerName,",
+						"          runId = $runId,",
+						"          triggerTime = $triggerTime,",
+						"          status = $status,",
+						"          fileName = $fileName) ~> derivedColumnTologPipelinelogs",
+						"derivedColumnTologPipelinelogs select(mapColumn(",
+						"          adfName,",
+						"          pipelineName,",
+						"          triggerName,",
+						"          runId,",
+						"          triggerTime,",
+						"          status,",
+						"          fileName",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectReqColumns",
+						"selectReqColumns sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          saleDate as string,",
+						"          saleItem as string,",
+						"          country as string,",
+						"          quantity as string",
+						"     ),",
+						"     partitionFileNames:[($fileName)],",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> logOutputData"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/dummyData')]",
+				"[concat(variables('factoryId'), '/datasets/logsData')]"
 			]
 		},
 		{
