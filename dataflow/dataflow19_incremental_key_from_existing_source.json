@@ -1,0 +1,120 @@
+{
+	"name": "dataflow19_incremental_key_from_existing_source",
+	"properties": {
+		"folder": {
+			"name": "Real Time scenarios"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "old_empDataFromWhichIncrementKeysStart",
+						"type": "DatasetReference"
+					},
+					"name": "oldEmpData"
+				},
+				{
+					"dataset": {
+						"referenceName": "Increment_existing_key_data",
+						"type": "DatasetReference"
+					},
+					"name": "newDatasetWithoutEmpid"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "OutputIncremenetedData",
+						"type": "DatasetReference"
+					},
+					"name": "outputData"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumnDummyToGetMaxvalueOfID"
+				},
+				{
+					"name": "aggregateMaxEmpId"
+				},
+				{
+					"name": "joinDummyMaxStreamtonewEMPdata"
+				},
+				{
+					"name": "surrogateKeyAddempId"
+				},
+				{
+					"name": "derivedColumnIncrementedEmpIdColumn"
+				},
+				{
+					"name": "selectRequiredColumns"
+				},
+				{
+					"name": "unionOfOlddataWithIncrementedData"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          empid as string,",
+				"          empname as string,",
+				"          Gender as string,",
+				"          Country as string,",
+				"          Salary as string,",
+				"          DeptID as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> oldEmpData",
+				"source(output(",
+				"          empname as string,",
+				"          Gender as string,",
+				"          Country as string,",
+				"          Salary as string,",
+				"          DeptID as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> newDatasetWithoutEmpid",
+				"oldEmpData derive(dummy = 'dummy') ~> derivedColumnDummyToGetMaxvalueOfID",
+				"derivedColumnDummyToGetMaxvalueOfID aggregate(groupBy(dummy),",
+				"     MaxID = toString(max(toInteger(empid)))) ~> aggregateMaxEmpId",
+				"aggregateMaxEmpId, newDatasetWithoutEmpid join(1==1,",
+				"     joinType:'cross',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinDummyMaxStreamtonewEMPdata",
+				"joinDummyMaxStreamtonewEMPdata keyGenerate(output(empid as long),",
+				"     startAt: 1L,",
+				"     stepValue: 1L) ~> surrogateKeyAddempId",
+				"surrogateKeyAddempId derive(empid = toString( (toInteger(MaxID) + toInteger(empid)))) ~> derivedColumnIncrementedEmpIdColumn",
+				"derivedColumnIncrementedEmpIdColumn select(mapColumn(",
+				"          empid,",
+				"          empname,",
+				"          Gender,",
+				"          Country,",
+				"          Salary,",
+				"          DeptID",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectRequiredColumns",
+				"oldEmpData, selectRequiredColumns union(byName: true)~> unionOfOlddataWithIncrementedData",
+				"unionOfOlddataWithIncrementedData sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          empid as string,",
+				"          empname as string,",
+				"          Salary as string,",
+				"          DeptID as string",
+				"     ),",
+				"     partitionFileNames:['incrementalEmpData.csv'],",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> outputData"
+			]
+		}
+	}
+}
