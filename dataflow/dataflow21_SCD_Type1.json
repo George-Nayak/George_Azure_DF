@@ -1,0 +1,67 @@
+{
+	"name": "dataflow21_SCD_Type1",
+	"properties": {
+		"folder": {
+			"name": "Real Time scenarios"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "empData",
+						"type": "DatasetReference"
+					},
+					"name": "empData"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "employesSqlTable",
+						"type": "DatasetReference"
+					},
+					"name": "sqlOutputData"
+				}
+			],
+			"transformations": [
+				{
+					"name": "alterRowToUpsertData"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          empid as string,",
+				"          empname as string,",
+				"          Gender as string,",
+				"          Country as string,",
+				"          Salary as string,",
+				"          DeptID as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> empData",
+				"empData alterRow(upsertIf(1 == 1)) ~> alterRowToUpsertData",
+				"alterRowToUpsertData sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          empid as string,",
+				"          empname as string,",
+				"          Gender as string,",
+				"          Country as string,",
+				"          Salary as string,",
+				"          DeptID as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:true,",
+				"     keys:['empid'],",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sqlOutputData"
+			]
+		}
+	}
+}
