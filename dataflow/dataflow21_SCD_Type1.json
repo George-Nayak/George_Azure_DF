@@ -41,7 +41,7 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> empData",
-				"empData alterRow(upsertIf(1 == 1)) ~> alterRowToUpsertData",
+				"empData alterRow(upsertIf(1==1)) ~> alterRowToUpsertData",
 				"alterRowToUpsertData sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
@@ -60,7 +60,15 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError') ~> sqlOutputData"
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          empid,",
+				"          empname,",
+				"          Gender,",
+				"          Country,",
+				"          Salary,",
+				"          DeptID",
+				"     )) ~> sqlOutputData"
 			]
 		}
 	}
