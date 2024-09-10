@@ -1,0 +1,43 @@
+{
+	"name": "SCD2EmpSqlTable",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "PracticeSqlDatabaseConnection",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "SurrKey",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "emp_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "empName",
+				"type": "varchar"
+			},
+			{
+				"name": "gender",
+				"type": "varchar"
+			},
+			{
+				"name": "country",
+				"type": "varchar"
+			},
+			{
+				"name": "is_active",
+				"type": "bit"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "SCD2Employee"
+		}
+	}
+}

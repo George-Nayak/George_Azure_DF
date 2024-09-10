@@ -1,0 +1,109 @@
+{
+	"name": "dataflow22_SCD_Type2",
+	"properties": {
+		"folder": {
+			"name": "Real Time scenarios"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "EmpSCD2data",
+						"type": "DatasetReference"
+					},
+					"name": "empSCD2Data"
+				},
+				{
+					"dataset": {
+						"referenceName": "SCD2EmpSqlTable",
+						"type": "DatasetReference"
+					},
+					"name": "ExistingSQLSCD2EmpTableData"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "SCD2EmpSqlTable",
+						"type": "DatasetReference"
+					},
+					"name": "empSCD2SQLTable"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "select1RenamingSQLCol"
+				},
+				{
+					"name": "lookup1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          emp_id as integer,",
+				"          empName as string,",
+				"          gender as string,",
+				"          country as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> empSCD2Data",
+				"source(output(",
+				"          SurrKey as integer,",
+				"          emp_id as integer,",
+				"          empName as string,",
+				"          gender as string,",
+				"          country as string,",
+				"          is_active as boolean",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> ExistingSQLSCD2EmpTableData",
+				"empSCD2Data derive(is_active = 1) ~> derivedColumn1",
+				"ExistingSQLSCD2EmpTableData select(mapColumn(",
+				"          SQL_SurrKey = SurrKey,",
+				"          SQL_emp_id = emp_id,",
+				"          SQL_empName = empName,",
+				"          SQL_gender = gender,",
+				"          SQL_country = country,",
+				"          SQL_is_active = is_active",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1RenamingSQLCol",
+				"empSCD2Data, select1RenamingSQLCol lookup(emp_id == SQL_emp_id,",
+				"     multiple: true,",
+				"     broadcast: 'auto')~> lookup1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          SurrKey as integer,",
+				"          emp_id as integer,",
+				"          empName as string,",
+				"          gender as string,",
+				"          country as string,",
+				"          is_active as boolean",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          emp_id,",
+				"          empName,",
+				"          gender,",
+				"          country,",
+				"          is_active",
+				"     )) ~> empSCD2SQLTable"
+			]
+		}
+	}
+}
