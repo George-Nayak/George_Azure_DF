@@ -25,6 +25,60 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/sData')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PracticeDataLakeStorage",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"filename": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Practice"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().filename",
+							"type": "Expression"
+						},
+						"fileSystem": "sdata"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "saleDate",
+						"type": "String"
+					},
+					{
+						"name": "saleItem",
+						"type": "String"
+					},
+					{
+						"name": "country",
+						"type": "String"
+					},
+					{
+						"name": "quantity",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/sDataOutput')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -319,6 +373,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/sData')]",
 				"[concat(variables('factoryId'), '/datasets/sDataOutput')]"
 			]
 		},
@@ -898,6 +953,54 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/SCD2EmpSqlTable')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "PracticeSqlDatabaseConnection",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "SurrKey",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "emp_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "empName",
+						"type": "varchar"
+					},
+					{
+						"name": "gender",
+						"type": "varchar"
+					},
+					{
+						"name": "country",
+						"type": "varchar"
+					},
+					{
+						"name": "is_active",
+						"type": "bit"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "SCD2Employee"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/PracticeSqlDatabaseConnection')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/employesSqlTable')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1286,166 +1389,6 @@
 						"filterDynamically sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     partitionFileNames:['ParameterizeDataflow.csv'],",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> outputData"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/dataflow17_fixed_lengthOpeartion')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "Real Time scenarios"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "fixedlenghtData",
-								"type": "DatasetReference"
-							},
-							"name": "fixedLengthData"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "Outputdata",
-								"type": "DatasetReference"
-							},
-							"name": "outputData"
-						}
-					],
-					"transformations": [
-						{
-							"name": "derivedColumnFromFixedScema"
-						},
-						{
-							"name": "selectreqCol"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          Column_1 as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> fixedLengthData",
-						"fixedLengthData derive(empID = substring(Column_1, 1, 4),",
-						"          Name = substring(Column_1, 5, 10),",
-						"          State = substring(Column_1, 15, 2),",
-						"          phoneNumber = substring(Column_1, 17, 10)) ~> derivedColumnFromFixedScema",
-						"derivedColumnFromFixedScema select(mapColumn(",
-						"          empID,",
-						"          Name,",
-						"          State,",
-						"          phoneNumber",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> selectreqCol",
-						"selectreqCol sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     partitionFileNames:['fixedLengthData.csv'],",
-						"     umask: 0022,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> outputData"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/dataflow18_deleteDuplicate_rows')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "Real Time scenarios"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "empData",
-								"type": "DatasetReference"
-							},
-							"name": "oldEMpData"
-						},
-						{
-							"dataset": {
-								"referenceName": "newEmpData",
-								"type": "DatasetReference"
-							},
-							"name": "NewEmpData"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "Outputdata",
-								"type": "DatasetReference"
-							},
-							"name": "outputData"
-						}
-					],
-					"transformations": [
-						{
-							"name": "union1"
-						},
-						{
-							"name": "aggregateToProcessIncrementalRows"
-						},
-						{
-							"name": "sortInAsendingOrder"
-						},
-						{
-							"name": "derivedColumnConvertStringToInteger"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          empid as string,",
-						"          empname as string,",
-						"          Gender as string,",
-						"          Country as string,",
-						"          Salary as string,",
-						"          DeptID as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> oldEMpData",
-						"source(output(",
-						"          empid as string,",
-						"          empname as string,",
-						"          Gender as string,",
-						"          Country as string,",
-						"          Salary as string,",
-						"          DeptID as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> NewEmpData",
-						"oldEMpData, NewEmpData union(byName: true)~> union1",
-						"union1 aggregate(groupBy(empid),",
-						"     each(match(name!='empid'), $$ = first($$))) ~> aggregateToProcessIncrementalRows",
-						"derivedColumnConvertStringToInteger sort(asc(empid, true)) ~> sortInAsendingOrder",
-						"aggregateToProcessIncrementalRows derive(empid = toInteger(empid)) ~> derivedColumnConvertStringToInteger",
-						"sortInAsendingOrder sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     partitionFileNames:['incrementalEmpData.csv'],",
 						"     umask: 0022,",
 						"     preCommands: [],",
 						"     postCommands: [],",
