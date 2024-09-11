@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Lookup1",
+				"name": "LookupAlltableNames",
 				"type": "Lookup",
 				"dependsOn": [],
 				"policy": {
@@ -33,7 +33,7 @@
 				"type": "ForEach",
 				"dependsOn": [
 					{
-						"activity": "Lookup1",
+						"activity": "LookupAlltableNames",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -42,7 +42,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('Lookup1').output.value",
+						"value": "@activity('Copy data for each data').output.value",
 						"type": "Expression"
 					},
 					"activities": [
@@ -88,13 +88,29 @@
 							"inputs": [
 								{
 									"referenceName": "AgainAllDboAzureSqlTable1",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"TableName": {
+											"value": "@item().TABLE_NAME",
+											"type": "Expression"
+										},
+										"TableSchema": {
+											"value": "@item().TABLE_SCHEMA",
+											"type": "Expression"
+										}
+									}
 								}
 							],
 							"outputs": [
 								{
-									"referenceName": "Outputdata",
-									"type": "DatasetReference"
+									"referenceName": "SQLDBOTableData",
+									"type": "DatasetReference",
+									"parameters": {
+										"TableName": {
+											"value": "@concat(item().TABLE_SCHEMA,'.',item().TABLE_NAME,'.csv')",
+											"type": "Expression"
+										}
+									}
 								}
 							]
 						}
