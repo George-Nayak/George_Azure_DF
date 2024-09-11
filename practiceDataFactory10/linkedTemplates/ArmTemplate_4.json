@@ -13,6 +13,257 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/dataflow21_SCD_Type1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Real Time scenarios"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "empData",
+								"type": "DatasetReference"
+							},
+							"name": "empData"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "employesSqlTable",
+								"type": "DatasetReference"
+							},
+							"name": "sqlOutputData"
+						}
+					],
+					"transformations": [
+						{
+							"name": "alterRowToUpsertData"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          empid as string,",
+						"          empname as string,",
+						"          Gender as string,",
+						"          Country as string,",
+						"          Salary as string,",
+						"          DeptID as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> empData",
+						"empData alterRow(upsertIf(1==1)) ~> alterRowToUpsertData",
+						"alterRowToUpsertData sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          empid as string,",
+						"          empname as string,",
+						"          Gender as string,",
+						"          Country as string,",
+						"          Salary as string,",
+						"          DeptID as string",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:false,",
+						"     updateable:false,",
+						"     upsertable:true,",
+						"     keys:['empid'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          empid,",
+						"          empname,",
+						"          Gender,",
+						"          Country,",
+						"          Salary,",
+						"          DeptID",
+						"     )) ~> sqlOutputData"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow22_SCD_Type2')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Real Time scenarios"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "EmpSCD2data",
+								"type": "DatasetReference"
+							},
+							"name": "empSCD2Data"
+						},
+						{
+							"dataset": {
+								"referenceName": "SCD2EmpSqlTable",
+								"type": "DatasetReference"
+							},
+							"name": "ExistingSQLSCD2EmpTableData"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "SCD2EmpSqlTable",
+								"type": "DatasetReference"
+							},
+							"name": "empSCD2SQLTable"
+						},
+						{
+							"dataset": {
+								"referenceName": "SCD2EmpSqlTable",
+								"type": "DatasetReference"
+							},
+							"name": "sink2OnlyToUpdate"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1AddedIsactive1"
+						},
+						{
+							"name": "select1RenamingSQLCol"
+						},
+						{
+							"name": "lookup1"
+						},
+						{
+							"name": "filter1NotNullRows"
+						},
+						{
+							"name": "select2KeepOnlySQLColumns"
+						},
+						{
+							"name": "derivedColumn2SQLISActive0"
+						},
+						{
+							"name": "alterRow1ToOnlyUpdateExsitingRecord"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          emp_id as integer,",
+						"          empName as string,",
+						"          gender as string,",
+						"          country as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> empSCD2Data",
+						"source(output(",
+						"          SurrKey as integer,",
+						"          emp_id as integer,",
+						"          empName as string,",
+						"          gender as string,",
+						"          country as string,",
+						"          is_active as boolean",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> ExistingSQLSCD2EmpTableData",
+						"empSCD2Data derive(is_active = 1) ~> derivedColumn1AddedIsactive1",
+						"ExistingSQLSCD2EmpTableData select(mapColumn(",
+						"          SQL_SurrKey = SurrKey,",
+						"          SQL_emp_id = emp_id,",
+						"          SQL_empName = empName,",
+						"          SQL_gender = gender,",
+						"          SQL_country = country,",
+						"          SQL_is_active = is_active",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1RenamingSQLCol",
+						"empSCD2Data, select1RenamingSQLCol lookup(emp_id == SQL_emp_id,",
+						"     multiple: true,",
+						"     broadcast: 'auto')~> lookup1",
+						"lookup1 filter(!isNull(SQL_emp_id)) ~> filter1NotNullRows",
+						"filter1NotNullRows select(mapColumn(",
+						"          SQL_SurrKey,",
+						"          SQL_emp_id,",
+						"          SQL_empName,",
+						"          SQL_gender,",
+						"          SQL_country,",
+						"          SQL_is_active",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select2KeepOnlySQLColumns",
+						"select2KeepOnlySQLColumns derive(SQL_is_active = 0) ~> derivedColumn2SQLISActive0",
+						"derivedColumn2SQLISActive0 alterRow(updateIf(1==1)) ~> alterRow1ToOnlyUpdateExsitingRecord",
+						"derivedColumn1AddedIsactive1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          SurrKey as integer,",
+						"          emp_id as integer,",
+						"          empName as string,",
+						"          gender as string,",
+						"          country as string,",
+						"          is_active as boolean",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 2,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          emp_id,",
+						"          empName,",
+						"          gender,",
+						"          country,",
+						"          is_active",
+						"     )) ~> empSCD2SQLTable",
+						"alterRow1ToOnlyUpdateExsitingRecord sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          SurrKey as integer,",
+						"          emp_id as integer,",
+						"          empName as string,",
+						"          gender as string,",
+						"          country as string,",
+						"          is_active as boolean",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:false,",
+						"     updateable:true,",
+						"     upsertable:false,",
+						"     keys:['SurrKey'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 1,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          SurrKey = SQL_SurrKey,",
+						"          emp_id = SQL_emp_id,",
+						"          empName = SQL_empName,",
+						"          gender = SQL_gender,",
+						"          country = SQL_country,",
+						"          is_active = SQL_is_active",
+						"     )) ~> sink2OnlyToUpdate"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pipeline14')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -152,7 +403,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/dataflow21_SCD_Type1')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/pipeline28')]",
@@ -201,7 +454,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/dataflow22_SCD_Type2')]"
+			]
 		}
 	]
 }
