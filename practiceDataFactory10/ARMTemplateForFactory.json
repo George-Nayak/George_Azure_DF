@@ -4242,17 +4242,36 @@
 								"type": "DatasetReference"
 							},
 							"name": "empSCD2SQLTable"
+						},
+						{
+							"dataset": {
+								"referenceName": "SCD2EmpSqlTable",
+								"type": "DatasetReference"
+							},
+							"name": "sink2OnlyToUpdate"
 						}
 					],
 					"transformations": [
 						{
-							"name": "derivedColumn1"
+							"name": "derivedColumn1AddedIsactive1"
 						},
 						{
 							"name": "select1RenamingSQLCol"
 						},
 						{
 							"name": "lookup1"
+						},
+						{
+							"name": "filter1NotNullRows"
+						},
+						{
+							"name": "select2KeepOnlySQLColumns"
+						},
+						{
+							"name": "derivedColumn2SQLISActive0"
+						},
+						{
+							"name": "alterRow1ToOnlyUpdateExsitingRecord"
 						}
 					],
 					"scriptLines": [
@@ -4277,7 +4296,7 @@
 						"     validateSchema: false,",
 						"     isolationLevel: 'READ_UNCOMMITTED',",
 						"     format: 'table') ~> ExistingSQLSCD2EmpTableData",
-						"empSCD2Data derive(is_active = 1) ~> derivedColumn1",
+						"empSCD2Data derive(is_active = 1) ~> derivedColumn1AddedIsactive1",
 						"ExistingSQLSCD2EmpTableData select(mapColumn(",
 						"          SQL_SurrKey = SurrKey,",
 						"          SQL_emp_id = emp_id,",
@@ -4291,7 +4310,20 @@
 						"empSCD2Data, select1RenamingSQLCol lookup(emp_id == SQL_emp_id,",
 						"     multiple: true,",
 						"     broadcast: 'auto')~> lookup1",
-						"derivedColumn1 sink(allowSchemaDrift: true,",
+						"lookup1 filter(!isNull(SQL_emp_id)) ~> filter1NotNullRows",
+						"filter1NotNullRows select(mapColumn(",
+						"          SQL_SurrKey,",
+						"          SQL_emp_id,",
+						"          SQL_empName,",
+						"          SQL_gender,",
+						"          SQL_country,",
+						"          SQL_is_active",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select2KeepOnlySQLColumns",
+						"select2KeepOnlySQLColumns derive(SQL_is_active = 0) ~> derivedColumn2SQLISActive0",
+						"derivedColumn2SQLISActive0 alterRow(updateIf(1==1)) ~> alterRow1ToOnlyUpdateExsitingRecord",
+						"derivedColumn1AddedIsactive1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     input(",
 						"          SurrKey as integer,",
@@ -4308,6 +4340,7 @@
 						"     format: 'table',",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 2,",
 						"     errorHandlingOption: 'stopOnFirstError',",
 						"     mapColumn(",
 						"          emp_id,",
@@ -4315,7 +4348,35 @@
 						"          gender,",
 						"          country,",
 						"          is_active",
-						"     )) ~> empSCD2SQLTable"
+						"     )) ~> empSCD2SQLTable",
+						"alterRow1ToOnlyUpdateExsitingRecord sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          SurrKey as integer,",
+						"          emp_id as integer,",
+						"          empName as string,",
+						"          gender as string,",
+						"          country as string,",
+						"          is_active as boolean",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:false,",
+						"     updateable:true,",
+						"     upsertable:false,",
+						"     keys:['SurrKey'],",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     saveOrder: 1,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          SurrKey = SQL_SurrKey,",
+						"          emp_id = SQL_emp_id,",
+						"          empName = SQL_empName,",
+						"          gender = SQL_gender,",
+						"          country = SQL_country,",
+						"          is_active = SQL_is_active",
+						"     )) ~> sink2OnlyToUpdate"
 					]
 				}
 			},
