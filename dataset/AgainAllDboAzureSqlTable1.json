@@ -1,0 +1,20 @@
+{
+	"name": "AgainAllDboAzureSqlTable1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "PracticeSqlDatabaseConnection",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"TableName": {
+				"type": "string"
+			},
+			"TableSchema": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": []
+	}
+}

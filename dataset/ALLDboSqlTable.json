@@ -5,14 +5,6 @@
 			"referenceName": "PracticeSqlDatabaseConnection",
 			"type": "LinkedServiceReference"
 		},
-		"parameters": {
-			"TableSchema": {
-				"type": "string"
-			},
-			"TableName": {
-				"type": "string"
-			}
-		},
 		"annotations": [],
 		"type": "AzureSqlTable",
 		"schema": [],

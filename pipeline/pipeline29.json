@@ -87,7 +87,7 @@
 							},
 							"inputs": [
 								{
-									"referenceName": "ALLDboSqlTable",
+									"referenceName": "AgainAllDboAzureSqlTable1",
 									"type": "DatasetReference"
 								}
 							],
