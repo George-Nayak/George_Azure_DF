@@ -1448,6 +1448,57 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/pipeline28')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow22SCType2",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dataflow22_SCD_Type2",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"empSCD2Data": {},
+									"ExistingSQLSCD2EmpTableData": {},
+									"empSCD2SQLTable": {},
+									"sink2OnlyToUpdate": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Real Time scenario"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/dataflow22_SCD_Type2')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pipeline3')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -1857,6 +1908,9 @@
 					"referenceName": "PracticeDataLakeStorage",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "RealTime Datasets"
+				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
@@ -1933,6 +1987,9 @@
 				"linkedServiceName": {
 					"referenceName": "PracticeDataLakeStorage",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "RealTime Datasets"
 				},
 				"annotations": [],
 				"type": "DelimitedText",
@@ -2178,6 +2235,9 @@
 					"referenceName": "PracticeDataLakeStorage",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "RealTime Datasets"
+				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
@@ -2253,6 +2313,9 @@
 				"linkedServiceName": {
 					"referenceName": "PracticeSqlDatabaseConnection",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "RealTime Datasets"
 				},
 				"annotations": [],
 				"type": "AzureSqlTable",
@@ -2439,6 +2502,9 @@
 					"referenceName": "PracticeDataLakeStorage",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "RealTime Datasets"
+				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
@@ -2613,6 +2679,9 @@
 				"linkedServiceName": {
 					"referenceName": "PracticeDataLakeStorage",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "RealTime Datasets"
 				},
 				"annotations": [],
 				"type": "DelimitedText",
