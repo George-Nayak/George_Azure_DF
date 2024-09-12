@@ -25,6 +25,9 @@
 		},
 		"PracticeSqlDatabaseConnection_properties_typeProperties_userName": {
 			"value": "sqladmin"
+		},
+		"RestAPIConnection_properties_typeProperties_url": {
+			"value": "https://reqres.in/api/users"
 		}
 	}
 }
