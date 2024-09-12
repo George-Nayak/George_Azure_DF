@@ -2599,6 +2599,9 @@
 					"referenceName": "PracticeSqlDatabaseConnection",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "RealTime Datasets"
+				},
 				"annotations": [],
 				"type": "AzureSqlTable",
 				"schema": [],
@@ -2624,6 +2627,9 @@
 					"TableSchema": {
 						"type": "string"
 					}
+				},
+				"folder": {
+					"name": "RealTime Datasets"
 				},
 				"annotations": [],
 				"type": "AzureSqlTable",
@@ -2922,6 +2928,9 @@
 					"referenceName": "HttpServerToDownloadFile",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "RealTime Datasets"
+				},
 				"annotations": [],
 				"type": "Binary",
 				"typeProperties": {
@@ -3133,6 +3142,9 @@
 						"type": "string"
 					}
 				},
+				"folder": {
+					"name": "RealTime Datasets"
+				},
 				"annotations": [],
 				"type": "RestResource",
 				"typeProperties": {
@@ -3160,6 +3172,9 @@
 					"filename": {
 						"type": "string"
 					}
+				},
+				"folder": {
+					"name": "RealTime Datasets"
 				},
 				"annotations": [],
 				"type": "DelimitedText",
@@ -3256,6 +3271,9 @@
 					"TableName": {
 						"type": "string"
 					}
+				},
+				"folder": {
+					"name": "RealTime Datasets"
 				},
 				"annotations": [],
 				"type": "DelimitedText",
@@ -3406,6 +3424,9 @@
 					"fileName": {
 						"type": "string"
 					}
+				},
+				"folder": {
+					"name": "RealTime Datasets"
 				},
 				"annotations": [],
 				"type": "DelimitedText",
@@ -3638,6 +3659,9 @@
 				"linkedServiceName": {
 					"referenceName": "PracticeDataLakeStorage",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "RealTime Datasets"
 				},
 				"annotations": [],
 				"type": "DelimitedText",
@@ -3912,6 +3936,9 @@
 				"linkedServiceName": {
 					"referenceName": "PracticeDataLakeStorage",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "RealTime Datasets"
 				},
 				"annotations": [],
 				"type": "Binary",
