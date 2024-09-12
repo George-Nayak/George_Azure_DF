@@ -1,0 +1,12 @@
+{
+	"name": "HttpServerToDownloadFile",
+	"properties": {
+		"annotations": [],
+		"type": "HttpServer",
+		"typeProperties": {
+			"url": "https://github.com/gdemin/excel.link/raw/master/inst/xlsx/R_connection_examples.xlsm",
+			"enableServerCertificateValidation": true,
+			"authenticationType": "Anonymous"
+		}
+	}
+}
