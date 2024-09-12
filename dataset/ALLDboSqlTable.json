@@ -5,6 +5,9 @@
 			"referenceName": "PracticeSqlDatabaseConnection",
 			"type": "LinkedServiceReference"
 		},
+		"folder": {
+			"name": "RealTime Datasets"
+		},
 		"annotations": [],
 		"type": "AzureSqlTable",
 		"schema": []

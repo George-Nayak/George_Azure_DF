@@ -5,6 +5,9 @@
 			"referenceName": "HttpServerToDownloadFile",
 			"type": "LinkedServiceReference"
 		},
+		"folder": {
+			"name": "RealTime Datasets"
+		},
 		"annotations": [],
 		"type": "Binary",
 		"typeProperties": {
