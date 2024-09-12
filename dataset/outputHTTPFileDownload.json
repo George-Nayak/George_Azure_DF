@@ -1,0 +1,19 @@
+{
+	"name": "outputHTTPFileDownload",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "PracticeDataLakeStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "R_connection_examples.xlsm",
+				"folderPath": "output data",
+				"fileSystem": "data"
+			}
+		}
+	}
+}
