@@ -8,6 +8,9 @@
 		"PracticeDataLakeStorage_accountKey": {
 			"value": ""
 		},
+		"HttpServerToDownloadFile_properties_typeProperties_url": {
+			"value": "https://github.com/gdemin/excel.link/raw/master/inst/xlsx/R_connection_examples.xlsm"
+		},
 		"PracticeAzureKeyVaultConnection_properties_typeProperties_baseUrl": {
 			"value": "https://practiceKeyVaultt.vault.azure.net/"
 		},
